@@ -1,9 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard1.1</TargetFramework>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Nullable>disable</Nullable>
+		<PackageOutputPath>../../nupkg/$(Configuration)</PackageOutputPath>
+	</PropertyGroup>
+	<PropertyGroup>
+		<Title>WebUI.NET secure (OpenSSL) natives</Title>
+		<Company>WebUI.NET</Company>
+		<Authors>Juff-Ma</Authors>
+		<Description>Native dependencies for WebUI.NET with OpenSSL support.</Description>
+		<Copyright>Copyright (C) 2024 Juff-Ma. Copyright (C) WebUI project 2023-2024 Hassan Draga. Copyright (C) Civetweb 2013-2024 The CivetWeb Developers, 2004-2013 Sergey Lyubka, 2013 No Face Press, LLC (Thomas Davis), 2013 F-Secure Corporation. Copyright (C) OpenSSL 1998-2024 The OpenSSL Project</Copyright>
+		<PackageProjectUrl>https://webui.me</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Juff-Ma/WebUI.NET</RepositoryUrl>
+		<PackageTags>webui;ui;gui;browser;webbrowser</PackageTags>
+		<AssemblyVersion>2.4.0.0</AssemblyVersion>
+		<FileVersion>2.4.2.0</FileVersion>
+		<InformationalVersion>Version 2.4.2 of WebUI release 1 of WebUI.NET.Natives.Secure</InformationalVersion>
+		<VersionPrefix>2.4.2.0</VersionPrefix>
+		<VersionSuffix>-alpha.1</VersionSuffix>
+		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
+		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PackageIcon>webui_net.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<WarningLevel>9999</WarningLevel>
+		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<WarningLevel>9999</WarningLevel>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<Choose>
+		<When Condition="'$(Configuration)' == 'Debug'">
+			<ItemGroup>
+				<None Include="../../natives/secure/logging/**" Pack="true" PackagePath="runtimes/" />
+			</ItemGroup>
+		</When>
+	</Choose>
+	<Choose>
+		<When Condition="'$(Configuration)' == 'Release'">
+			<ItemGroup>
+				<None Include="../../natives/secure/default/**" Pack="true" PackagePath="runtimes/" />
+			</ItemGroup>
+		</When>
+	</Choose>
+	<ItemGroup>
+		<None Include="../../assets/webui_net.png" Pack="True" PackagePath="/"/>
+		<None Include="../../README.md" Pack="True" PackagePath="/"/>
+	</ItemGroup>
 
 </Project>
