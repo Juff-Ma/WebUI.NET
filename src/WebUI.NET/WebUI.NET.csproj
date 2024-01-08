@@ -10,6 +10,7 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>disable</Nullable>
 		<PackageOutputPath>../../nupkg/$(Configuration)</PackageOutputPath>
+		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -32,6 +33,10 @@
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageIcon>webui_net.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -45,8 +50,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="../../assets/webui_net.png" Pack="True" PackagePath="/"/>
-		<None Include="../../README.md" Pack="True" PackagePath="/"/>
+		<None Include="../../assets/webui_net.png" Pack="True" PackagePath="/" />
+		<None Include="../../README.md" Pack="True" PackagePath="/" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 	</ItemGroup>
 
 </Project>
