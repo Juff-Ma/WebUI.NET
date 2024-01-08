@@ -5,9 +5,48 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
+		<TargetFrameworks>netstandard2.0;net472;net48;net6.0;net7.0;net8.0</TargetFrameworks>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+		<PackageOutputPath>../../nupkg/$(Configuration)</PackageOutputPath>
 	</PropertyGroup>
+
+	<PropertyGroup>
+		<Title>WebUI.NET</Title>
+		<Company>WebUI.NET</Company>
+		<Authors>Juff-Ma</Authors>
+		<Description>.NET/C# bindings for the WebUI browser based GUI library.</Description>
+		<Copyright>Copyright (C) 2024 Juff-Ma</Copyright>
+		<PackageProjectUrl>https://webui.me</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Juff-Ma/WebUI.NET</RepositoryUrl>
+		<PackageTags>webui;ui;gui;browser;webbrowser</PackageTags>
+		<AssemblyVersion>2.4.0.0</AssemblyVersion>
+		<FileVersion>2.4.2.0</FileVersion>
+		<InformationalVersion>Version 2.4.2 of WebUI, release 1 of WebUI.NET</InformationalVersion>
+		<VersionPrefix>2.4.2.0</VersionPrefix>
+		<VersionSuffix>-alpha.1</VersionSuffix>
+		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
+		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
+		<IncludeSymbols>True</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PackageIcon>webui_net.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<WarningLevel>9999</WarningLevel>
+		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<WarningLevel>9999</WarningLevel>
+		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="../../assets/webui_net.png" Pack="True" PackagePath="/"/>
+		<None Include="../../README.md" Pack="True" PackagePath="/"/>
+	</ItemGroup>
 
 </Project>

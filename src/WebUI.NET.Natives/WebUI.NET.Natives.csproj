@@ -22,7 +22,7 @@
 		<PackageTags>webui;ui;gui;browser;webbrowser</PackageTags>
 		<AssemblyVersion>2.4.0.0</AssemblyVersion>
 		<FileVersion>2.4.2.0</FileVersion>
-		<InformationalVersion>Version 2.4.2 of WebUI release 1 of WebUI.NET.Natives</InformationalVersion>
+		<InformationalVersion>Version 2.4.2 of WebUI, release 1 of WebUI.NET.Natives</InformationalVersion>
 		<VersionPrefix>2.4.2.0</VersionPrefix>
 		<VersionSuffix>-alpha.1</VersionSuffix>
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
