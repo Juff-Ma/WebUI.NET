@@ -34,11 +34,13 @@
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
 		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+		<DebugType>embedded</DebugType>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
 		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+		<DebugType>portable</DebugType>
 	</PropertyGroup>
 
 	<Choose>
