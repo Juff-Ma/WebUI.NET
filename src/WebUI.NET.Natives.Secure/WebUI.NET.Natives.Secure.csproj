@@ -1,7 +1,7 @@
 ﻿<!-- This Source Code Form is subject to the terms of the Mozilla Public
    - License, v. 2.0. If a copy of the MPL was not distributed with this
    - file, You can obtain one at https://mozilla.org/MPL/2.0/. -->
-	
+
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
@@ -20,11 +20,11 @@
 		<RepositoryUrl>https://github.com/Juff-Ma/WebUI.NET</RepositoryUrl>
 		<PackageTags>webui;ui;gui;browser;webbrowser</PackageTags>
 		<AssemblyVersion>2.4.0.0</AssemblyVersion>
-		<FileVersion>2.4.2.0</FileVersion>
-		<InformationalVersion>Version 2.4.2 of WebUI, release 1 of WebUI.NET.Natives.Secure</InformationalVersion>
 		<VersionPrefix>2.4.2.0</VersionPrefix>
 		<VersionSuffix>-alpha.1</VersionSuffix>
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
+		<InformationalVersion>$(Version)</InformationalVersion>
+		<FileVersion>$(VersionPrefix)</FileVersion>
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
 		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
@@ -57,8 +57,8 @@
 		</When>
 	</Choose>
 	<ItemGroup>
-		<None Include="../../assets/webui_net.png" Pack="True" PackagePath="/"/>
-		<None Include="../../README.md" Pack="True" PackagePath="/"/>
+		<None Include="../../assets/webui_net.png" Pack="True" PackagePath="/" />
+		<None Include="../../README.md" Pack="True" PackagePath="/" />
 	</ItemGroup>
 
 </Project>
