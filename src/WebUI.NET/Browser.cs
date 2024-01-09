@@ -8,7 +8,7 @@
 
 namespace WebUI
 {
-    public enum Browsers
+    public enum Browser : uint
     {
         NoBrowser = 0,
         AnyBrowser = 1,

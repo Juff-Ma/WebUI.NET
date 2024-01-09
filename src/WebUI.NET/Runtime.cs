@@ -8,7 +8,7 @@
 
 namespace WebUI
 {
-    public enum Runtimes
+    public enum Runtime : uint
     {
         None = 0,
         Deno = 1,
