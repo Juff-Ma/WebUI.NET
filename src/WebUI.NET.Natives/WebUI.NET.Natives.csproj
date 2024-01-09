@@ -24,7 +24,6 @@
 		<VersionPrefix>2.4.2.0</VersionPrefix>
 		<VersionSuffix>-alpha.1</VersionSuffix>
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
-		<InformationalVersion>$(Version)</InformationalVersion>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
 		<IncludeSymbols>True</IncludeSymbols>
