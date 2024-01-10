@@ -18,7 +18,7 @@ namespace WebUI
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
-        private delegate void EventCallback(in Event @event);
+        private delegate void EventCallback(ref Event @event);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
             BestFitMapping = false, ThrowOnUnmappableChar = false,
@@ -116,12 +116,16 @@ namespace WebUI
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_set_size")]
-            public static extern void SetSize(UIntPtr windowHandle, uint width, uint height);
+            public static extern void SetSize(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.U4)] uint width,
+                [MarshalAs(UnmanagedType.U4)] uint height);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_set_position")]
-            public static extern void SetPosition(UIntPtr windowHandle, uint x, uint y);
+            public static extern void SetPosition(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.U4)] uint x,
+                [MarshalAs(UnmanagedType.U4)] uint y);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
@@ -180,7 +184,7 @@ namespace WebUI
                 EntryPoint = "webui_script")]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool Run(UIntPtr windowHandle, string function,
-                [MarshalAs(UnmanagedType.LPArray), Out] char[] data, UIntPtr length);
+                [MarshalAs(UnmanagedType.LPArray), Out] byte[] data, UIntPtr length);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
