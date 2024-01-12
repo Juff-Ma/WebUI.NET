@@ -6,7 +6,7 @@
 
 //TODO: Add Comments
 
-// Ignore Spelling: Utils Malloc Tls Pem
+// Ignore Spelling: Utils Malloc Tls Pem App
 
 using System;
 using System.Runtime.InteropServices;
@@ -15,7 +15,7 @@ namespace WebUI.NET
 {
     public static class Utils
     {
-#if NET7_0_OR_GREATER
+#if !NET7_0_OR_GREATER
         internal static partial class Natives
         {
             
@@ -79,6 +79,12 @@ namespace WebUI.NET
                 EntryPoint = "webui_set_tls_certificate")]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool SetTlsCertificate(string certPem, string privateKeyPem);
+
+            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+                ThrowOnUnmappableChar = false, BestFitMapping = false,
+                EntryPoint = "webui_interface_is_app_running")]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static extern bool IsAppRunning();
         }
 #endif
 

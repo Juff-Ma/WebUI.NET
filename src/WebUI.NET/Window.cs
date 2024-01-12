@@ -18,17 +18,20 @@ namespace WebUI
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
-        private delegate void EventCallback(ref Event @event);
+        private delegate void EventCallback(UIntPtr windowHandle,
+            [MarshalAs(UnmanagedType.SysUInt)] EventType eventType, string element,
+            UIntPtr eventId, UIntPtr bindId);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
         private delegate IntPtr FileHandler(string filename, out int length);
 
-#if NET7_0_OR_GREATER
+        //TODO: implement net7+
+#if !NET7_0_OR_GREATER
         internal static partial class Natives
         {
-            
+
         }
 #else   
         private static class Natives
@@ -50,7 +53,12 @@ namespace WebUI
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
-                EntryPoint = "webui_bind")]
+                EntryPoint = "webui_interface_get_window_id")]
+            public static extern UIntPtr CheckValidWindow(UIntPtr windowId);
+
+            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+                ThrowOnUnmappableChar = false, BestFitMapping = false,
+                EntryPoint = "webui_interface_bind")]
             public static extern UIntPtr Bind(UIntPtr windowHandle, string element,
                 [MarshalAs(UnmanagedType.FunctionPtr)] EventCallback callback);
 
