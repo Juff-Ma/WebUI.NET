@@ -7,16 +7,44 @@
 //TODO: Add Comments
 
 using System;
+#if NET7_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 using System.Runtime.InteropServices;
 
 namespace WebUI.Events
 {
-    public class Event
+#if NET7_0_OR_GREATER
+    internal partial class Event
     {
-#if !NET7_0_OR_GREATER
-        internal static partial class Natives
+#else
+    internal class Event
+    {
+#endif
+#if NET7_0_OR_GREATER
+        private static partial class Natives
         {
-            
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_int_at")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I8)]
+            public static partial long GetInt(UIntPtr windowHandle, UIntPtr eventId, UIntPtr index);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_string_at")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial string GetString(UIntPtr windowHandle, UIntPtr eventId, UIntPtr index);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_bool_at")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.U1)]
+            public static partial bool GetBool(UIntPtr windowHandle, UIntPtr eventId, UIntPtr index);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_size_at")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr GetSize(UIntPtr windowHandle, UIntPtr eventId, UIntPtr index);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_set_response")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void Return(UIntPtr windowHandle, UIntPtr eventId, string content);
         }
 #else
         private static class Natives

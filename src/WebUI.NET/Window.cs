@@ -7,14 +7,21 @@
 //TODO: implement
 
 using System;
+#if NET7_0_OR_GREATER
+using System.Runtime.CompilerServices;
+#endif
 using System.Runtime.InteropServices;
-using System.Text;
 using WebUI.Events;
 
 namespace WebUI
 {
+#if NET7_0_OR_GREATER   
+    public partial class Window
+    {
+#else
     public class Window
     {
+#endif
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
@@ -27,13 +34,149 @@ namespace WebUI
             CharSet = CharSet.Ansi)]
         private delegate IntPtr FileHandler(string filename, out int length);
 
-        //TODO: implement net7+
-#if !NET7_0_OR_GREATER
-        internal static partial class Natives
+#if NET7_0_OR_GREATER
+        private static partial class Natives
         {
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_new_window")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr NewWindow();
 
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_new_window_id")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr NewWindow(UIntPtr windowId);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_get_new_window_id")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr GetNewWindowId();
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_window_id")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr CheckValidWindow(UIntPtr windowId);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_bind")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr Bind(UIntPtr windowHandle, string element,
+                [MarshalAs(UnmanagedType.FunctionPtr)] EventCallback callback);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_show")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static partial bool Show(UIntPtr windowHandle, string content);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_show_browser")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static partial bool Show(UIntPtr windowHandle, string content, UIntPtr browser);
+
+            public static bool Show(UIntPtr windowHandle, string content, Browser browser) =>
+                Show(windowHandle, content, (UIntPtr)browser);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_kiosk")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetKiosk(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.I1)] bool status);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_destroy")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void Destroy(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_root_folder")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static partial bool SetRootFolder(UIntPtr windowHandle, string folder);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_file_handler")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetFileHandler(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.FunctionPtr)] FileHandler handler);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_is_shown")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static partial bool WindowIsShown(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_icon")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetIcon(UIntPtr windowHandle, string icon, string iconType);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_send_raw")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SendRaw(UIntPtr windowHandle, string function,
+                [MarshalAs(UnmanagedType.LPArray)] byte[] data, UIntPtr length);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_hide")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetHidden(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.I1)] bool status);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_size")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetSize(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.U4)] uint width,
+                [MarshalAs(UnmanagedType.U4)] uint height);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_position")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetPosition(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.U4)] uint x,
+                [MarshalAs(UnmanagedType.U4)] uint y);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_profile")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetProfile(UIntPtr windowHandle, string name, string path);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_proxy")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetProxy(UIntPtr windowHandle, string proxyServer);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_get_url")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial string GetUrl(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_public")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetPublic(UIntPtr windowHandle,
+                [MarshalAs(UnmanagedType.I1)] bool status);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_navigate")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void Navigate(UIntPtr windowHandle, string url);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_delete_profile")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void DeleteProfile(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_get_parent_process_id")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr GetParentProcessId(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_get_child_process_id")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial UIntPtr GetChildProcessId(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_port")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static partial bool SetPort(UIntPtr windowHandle, UIntPtr port);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_run")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void Run(UIntPtr windowHandle, string javaScript);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_script")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static partial bool Run(UIntPtr windowHandle, string function,
+                [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_runtime")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void SetRuntime(UIntPtr windowHandle, UIntPtr runtime);
+
+            public static void SetRuntime(UIntPtr windowHandle, Runtime runtime) =>
+                SetRuntime(windowHandle, (UIntPtr)runtime);
         }
-#else   
+#else
         private static class Natives
         {
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
@@ -192,14 +335,7 @@ namespace WebUI
                 EntryPoint = "webui_script")]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool Run(UIntPtr windowHandle, string function,
-                [MarshalAs(UnmanagedType.LPArray), Out] byte[] data, UIntPtr length);
-
-            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
-                ThrowOnUnmappableChar = false, BestFitMapping = false,
-                EntryPoint = "webui_script")]
-            [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool Run(UIntPtr windowHandle, string function,
-                [MarshalAs(UnmanagedType.LPStr)] StringBuilder data, UIntPtr length);
+                [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
