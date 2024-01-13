@@ -5,14 +5,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net472;net48;net6.0;net7.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;netstandard2.1;net472;net48;net6.0;net7.0;net8.0</TargetFrameworks>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<Nullable>disable</Nullable>
 		<PackageOutputPath>../../nupkg/$(Configuration)</PackageOutputPath>
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+		<Nullable>disable</Nullable>
+		<WarningLevel>9999</WarningLevel>
 	</PropertyGroup>
-
 	<PropertyGroup>
 		<Title>WebUI.NET</Title>
 		<Company>WebUI.NET</Company>
@@ -28,7 +28,6 @@
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
-		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageIcon>webui_net.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -36,18 +35,19 @@
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 		<DebugType>embedded</DebugType>
+		<IncludeSymbols>False</IncludeSymbols>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<DebugType>portable</DebugType>
+		<IncludeSymbols>True</IncludeSymbols>
 	</PropertyGroup>
 
 	<ItemGroup>

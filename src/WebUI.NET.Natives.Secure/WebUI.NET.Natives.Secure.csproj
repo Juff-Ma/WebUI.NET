@@ -9,6 +9,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<Nullable>disable</Nullable>
 		<PackageOutputPath>../../nupkg/$(Configuration)</PackageOutputPath>
+		<WarningLevel>9999</WarningLevel>
 	</PropertyGroup>
 	<PropertyGroup>
 		<Title>WebUI.NET secure (OpenSSL) natives</Title>
@@ -25,22 +26,22 @@
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
-		<IncludeSymbols>True</IncludeSymbols>
 		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
 		<PackageIcon>webui_net.png</PackageIcon>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<ProduceReferenceAssembly>True</ProduceReferenceAssembly>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
-		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>False</TreatWarningsAsErrors>
 		<DebugType>embedded</DebugType>
+		<IncludeSymbols>False</IncludeSymbols>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Release'">
-		<WarningLevel>9999</WarningLevel>
 		<TreatWarningsAsErrors>True</TreatWarningsAsErrors>
 		<DebugType>portable</DebugType>
+		<IncludeSymbols>True</IncludeSymbols>
 	</PropertyGroup>
 
 	<Choose>
