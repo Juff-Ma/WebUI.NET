@@ -14,7 +14,7 @@ using System.Runtime.CompilerServices;
 #endif
 using System.Runtime.InteropServices;
 
-namespace WebUI.NET
+namespace WebUI
 {
 #if NET7_0_OR_GREATER
     public static partial class Utils
@@ -23,6 +23,10 @@ namespace WebUI.NET
     public static class Utils
     {
 #endif
+        public static void WaitForExit()
+        {
+            Natives.WebUIWait();
+        }
 #if NET7_0_OR_GREATER
         private static partial class Natives
         {
