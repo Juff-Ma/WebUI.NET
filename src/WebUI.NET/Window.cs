@@ -20,10 +20,10 @@ using WebUI.Events;
 namespace WebUI
 {
 #if NET7_0_OR_GREATER   
-    public partial class Window
+    public partial class Window : IDisposable
     {
 #else
-    public class Window
+    public class Window : IDisposable
     {
 #endif
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
@@ -37,6 +37,8 @@ namespace WebUI
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
         private delegate IntPtr FileHandler(string filename, out int length);
+
+        private bool _disposed;
 
         private readonly UIntPtr _handle;
 
@@ -67,6 +69,13 @@ namespace WebUI
             return new Window(handle);
         }
 
+        ~Window() => Dispose(true);
+
+        public bool Fullscreen
+        {
+            set => Natives.WebUISetKiosk(_handle, value);
+        }
+
         public static uint GetNewWindowId()
         {
             return Natives.WebUIGetNewWindowId().ToUInt32();
@@ -80,6 +89,30 @@ namespace WebUI
         public bool Show(string content, Browser browser)
         {
             return Natives.WebUIShow(_handle, content, browser);
+        }
+
+        public void Close()
+        {
+            Natives.WebUIClose(_handle);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool freeUnmanaged)
+        {
+            if (!_disposed)
+            {
+                if (freeUnmanaged)
+                {
+                    Natives.WebUIDestroy(_handle);
+                }
+
+                _disposed = true;
+            }
         }
 #if NET7_0_OR_GREATER
         private static partial class Natives
@@ -126,6 +159,10 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_destroy")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial void WebUIDestroy(UIntPtr windowHandle);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_close")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void WebUIClose(UIntPtr windowHandle);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_root_folder")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -275,6 +312,11 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_destroy")]
             public static extern void WebUIDestroy(UIntPtr windowHandle);
+
+            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+                ThrowOnUnmappableChar = false, BestFitMapping = false,
+                EntryPoint = "webui_close")]
+            public static extern void WebUIClose(UIntPtr windowHandle);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
