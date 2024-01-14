@@ -38,7 +38,7 @@ namespace WebUI
             CharSet = CharSet.Ansi)]
         private delegate IntPtr FileHandler(string filename, out int length);
 
-        private UIntPtr _handle;
+        private readonly UIntPtr _handle;
 
         internal Window(UIntPtr windowHandle)
         {
@@ -56,7 +56,6 @@ namespace WebUI
         public static Window GetWindowById(uint id)
         {
 #endif
-
 
             var handle = Natives.WebUICheckValidWindow(new UIntPtr(id));
 
@@ -150,7 +149,7 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_send_raw")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial void WebUISendRaw(UIntPtr windowHandle, string function,
-                [MarshalAs(UnmanagedType.LPArray)] byte[] data, UIntPtr length);
+                [MarshalAs(UnmanagedType.LPArray), In] byte[] data, UIntPtr length);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_hide")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -304,7 +303,7 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_send_raw")]
             public static extern void WebUISendRaw(UIntPtr windowHandle, string function,
-                [MarshalAs(UnmanagedType.LPArray)] byte[] data, UIntPtr length);
+                [MarshalAs(UnmanagedType.LPArray), In] byte[] data, UIntPtr length);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
