@@ -27,6 +27,26 @@ namespace WebUI
         {
             Natives.WebUIWait();
         }
+
+        public static void ForceExit()
+        {
+            Natives.WebUIExit();
+        }
+
+        public static void Clean()
+        {
+            Natives.WebUIClean();
+        }
+
+        public static void SetStartupTimeout(uint seconds)
+        {
+            Natives.WebUISetTimeout(new UIntPtr(seconds));
+        }
+
+        public static void SetStartupTimeout(TimeSpan timeout)
+        {
+            SetStartupTimeout((uint)timeout.TotalSeconds);
+        }
 #if NET7_0_OR_GREATER
         private static partial class Natives
         {

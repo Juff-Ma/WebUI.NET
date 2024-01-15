@@ -122,6 +122,17 @@ namespace WebUI
             }
         }
 
+        public bool IsShown
+        {
+            get
+            {
+                ThrowIfDisposedOrInvalid();
+#pragma warning disable S3869 // At this point we know that _handle is valid and a refactor would complicate the ReleaseHandle() method
+                return Natives.WebUIWindowIsShown(_handle.DangerousGetHandle());
+#pragma warning restore S3869
+            }
+        }
+
         public static int GetNewWindowId()
         {
             return Natives.WebUIGetNewWindowId().ToInt32();
