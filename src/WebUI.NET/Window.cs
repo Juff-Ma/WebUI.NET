@@ -75,7 +75,7 @@ namespace WebUI
             protected override bool ReleaseHandle()
             {
                 Natives.WebUIDestroy(handle);
-                return !Natives.WebUIWindowIsShown(handle);
+                return !IsHandleValid(Natives.WebUICheckValidWindow(handle));
             }
         }
 
@@ -127,9 +127,7 @@ namespace WebUI
             get
             {
                 ThrowIfDisposedOrInvalid();
-#pragma warning disable S3869 // At this point we know that _handle is valid and a refactor would complicate the ReleaseHandle() method
-                return Natives.WebUIWindowIsShown(_handle.DangerousGetHandle());
-#pragma warning restore S3869
+                return Natives.WebUIWindowIsShown(_handle);
             }
         }
 
@@ -239,7 +237,7 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_is_shown")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static partial bool WebUIWindowIsShown(IntPtr windowHandle);
+            public static partial bool WebUIWindowIsShown(WindowHandle windowHandle);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_icon")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -396,7 +394,7 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_is_shown")]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebUIWindowIsShown(IntPtr windowHandle);
+            public static extern bool WebUIWindowIsShown(WindowHandle windowHandle);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
