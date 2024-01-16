@@ -181,7 +181,7 @@ namespace WebUI
                 string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, paramters);
 #else
                 byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
-                string privateKey = new(PemEncoding.Write("PRIVATE KEY", privateBytes));
+                string privateKey = PemEncoding.WriteString("PRIVATE KEY", privateBytes);
 #endif
                 string publicKey = key.ExportSubjectPublicKeyInfoPem();
                 return SetCertificate(publicKey, privateKey, false);
