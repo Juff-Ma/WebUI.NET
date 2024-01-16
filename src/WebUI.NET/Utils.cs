@@ -15,8 +15,6 @@ using System.IO;
 #nullable enable
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Reflection.Metadata;
-
 #endif
 
 #if NET7_0_OR_GREATER
@@ -137,7 +135,7 @@ namespace WebUI
                 certificate.GetDSAPrivateKey();
         }
 
-        public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<byte> password, PbeParameters paramters)
+        public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<byte> password, PbeParameters parameters)
         {
             var key = GetKeyFromCertificate(certificate);
 
@@ -146,10 +144,10 @@ namespace WebUI
                 return false;
             }
 
-            return SetCertificate(key, password, paramters);
+            return SetCertificate(key, password, parameters);
         }
 
-        public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<char> password, PbeParameters paramters)
+        public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<char> password, PbeParameters parameters)
         {
             var key = GetKeyFromCertificate(certificate);
 
@@ -158,7 +156,7 @@ namespace WebUI
                 return false;
             }
 
-            return SetCertificate(key, password, paramters);
+            return SetCertificate(key, password, parameters);
         }
 
         public static bool SetCertificate(X509Certificate2 certificate)
@@ -173,14 +171,14 @@ namespace WebUI
             return SetCertificate(key);
         }
 #if NET7_0_OR_GREATER
-        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters paramters)
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters parameters)
         {
             try
             {
 #if NET8_0_OR_GREATER
-                string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, paramters);
+                string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, parameters);
 #else
-                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
+                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, parameters);
                 string privateKey = PemEncoding.WriteString("PRIVATE KEY", privateBytes);
 #endif
                 string publicKey = key.ExportSubjectPublicKeyInfoPem();
@@ -192,11 +190,11 @@ namespace WebUI
             }
         }
 
-        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<char> password, PbeParameters paramters)
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<char> password, PbeParameters parameters)
         {
             try
             {
-                string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, paramters);
+                string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, parameters);
                 string publicKey = key.ExportSubjectPublicKeyInfoPem();
                 return SetCertificate(publicKey, privateKey, false);
             }
@@ -220,11 +218,11 @@ namespace WebUI
             }
         }
 #else
-                private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters paramters)
+                private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters parameters)
         {
             try
             {
-                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
+                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, parameters);
                 byte[] publicBytes = key.ExportSubjectPublicKeyInfo();
                 return SetCertificate(privateBytes, publicBytes);
             }
@@ -234,11 +232,11 @@ namespace WebUI
             }
         }
 
-        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<char> password, PbeParameters paramters)
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<char> password, PbeParameters parameters)
         {
             try
             {
-                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
+                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, parameters);
                 byte[] publicBytes = key.ExportSubjectPublicKeyInfo();
                 return SetCertificate(privateBytes, publicBytes);
             }
