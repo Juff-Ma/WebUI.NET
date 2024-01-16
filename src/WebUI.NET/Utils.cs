@@ -9,10 +9,21 @@
 // Ignore Spelling: Utils Malloc Tls Pem App
 
 using System;
+using System.IO;
+
+#if NET5_0_OR_GREATER
+#nullable enable
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Reflection.Metadata;
+
+#endif
+
 #if NET7_0_OR_GREATER
 using System.Runtime.CompilerServices;
 #endif
 using System.Runtime.InteropServices;
+
 
 namespace WebUI
 {
@@ -47,6 +58,219 @@ namespace WebUI
         {
             SetStartupTimeout((uint)timeout.TotalSeconds);
         }
+
+        public static void SetGlobalRootFolder(string folder)
+        {
+            if (!Natives.WebUISetDefaultRootFolder(folder))
+            {
+                throw new DirectoryNotFoundException("Specified folder does not exist or is invalid in another way");
+            }
+        }
+
+        public static void SetGlobalRootFolder(DirectoryInfo folder)
+        {
+            SetGlobalRootFolder(folder.FullName);
+        }
+
+        public static void DeleteAllProfiles()
+        {
+            Natives.WebUIDeleteProfiles();
+        }
+
+        /// <summary>
+        /// Native Base64 encoder from WebUI provided as a fall-back
+        /// </summary>
+        /// <param name="string">The <see cref="string"/> to be encoded</param>
+        /// <returns>The encoded <see cref="string"/></returns>
+        public static string EncodeBase64(string @string)
+        {
+            return Natives.WebUIEncode(@string);
+        }
+
+        /// <summary>
+        /// Native Base64 decoder from WebUI provided as a fall-back
+        /// </summary>
+        /// <param name="string">The <see cref="string"/> to be decoded</param>
+        /// <returns>The decoded <see cref="string"/></returns>
+        public static string DecodeBase64(string @string)
+        {
+            return Natives.WebUIDecode(@string);
+        }
+
+        internal static IntPtr Malloc(UIntPtr size)
+        {
+            return Natives.WebUIMalloc(size);
+        }
+
+        internal static void Free(IntPtr ptr)
+        {
+            Natives.WebUIFree(ptr);
+        }
+
+        public static bool AreWindowsOpen()
+        {
+            return Natives.WebUIIsAppRunning();
+        }
+
+        public static bool SetCertificate(string certificatePem, string privateKeyPem, bool loadFromFile = true)
+        {
+            if (!loadFromFile)
+            {
+                return Natives.WebUISetTlsCertificate(certificatePem, privateKeyPem);
+            }
+
+            return Natives.WebUISetTlsCertificate(File.ReadAllText(certificatePem), File.ReadAllText(privateKeyPem));
+        }
+
+        public static bool SetCertificate(FileInfo certificatePem, FileInfo privateKeyPem)
+        {
+            return SetCertificate(certificatePem.FullName, privateKeyPem.FullName);
+        }
+
+
+#if NET5_0_OR_GREATER
+        private static AsymmetricAlgorithm? GetKeyFromCertificate(X509Certificate2 certificate)
+        {
+            return (AsymmetricAlgorithm?)certificate.GetRSAPrivateKey() ??
+                (AsymmetricAlgorithm?)certificate.GetECDsaPrivateKey() ??
+                (AsymmetricAlgorithm?)certificate.GetECDiffieHellmanPrivateKey() ??
+                certificate.GetDSAPrivateKey();
+        }
+
+        public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<byte> password, PbeParameters paramters)
+        {
+            var key = GetKeyFromCertificate(certificate);
+
+            if (key is null)
+            {
+                return false;
+            }
+
+            return SetCertificate(key, password, paramters);
+        }
+
+        public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<char> password, PbeParameters paramters)
+        {
+            var key = GetKeyFromCertificate(certificate);
+
+            if (key is null)
+            {
+                return false;
+            }
+
+            return SetCertificate(key, password, paramters);
+        }
+
+        public static bool SetCertificate(X509Certificate2 certificate)
+        {
+            var key = GetKeyFromCertificate(certificate);
+
+            if (key is null)
+            {
+                return false;
+            }
+
+            return SetCertificate(key);
+        }
+#if NET7_0_OR_GREATER
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters paramters)
+        {
+            try
+            {
+#if NET8_0_OR_GREATER
+                string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, paramters);
+#else
+                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
+                string privateKey = new(PemEncoding.Write("PRIVATE KEY", privateBytes));
+#endif
+                string publicKey = key.ExportSubjectPublicKeyInfoPem();
+                return SetCertificate(publicKey, privateKey, false);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+        }
+
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<char> password, PbeParameters paramters)
+        {
+            try
+            {
+                string privateKey = key.ExportEncryptedPkcs8PrivateKeyPem(password, paramters);
+                string publicKey = key.ExportSubjectPublicKeyInfoPem();
+                return SetCertificate(publicKey, privateKey, false);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+        }
+
+        private static bool SetCertificate(AsymmetricAlgorithm key)
+        {
+            try
+            {
+                string privateKey = key.ExportPkcs8PrivateKeyPem();
+                string publicKey = key.ExportSubjectPublicKeyInfoPem();
+                return SetCertificate(publicKey, privateKey, false);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+        }
+#else
+                private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters paramters)
+        {
+            try
+            {
+                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
+                byte[] publicBytes = key.ExportSubjectPublicKeyInfo();
+                return SetCertificate(privateBytes, publicBytes);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+        }
+
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<char> password, PbeParameters paramters)
+        {
+            try
+            {
+                byte[] privateBytes = key.ExportEncryptedPkcs8PrivateKey(password, paramters);
+                byte[] publicBytes = key.ExportSubjectPublicKeyInfo();
+                return SetCertificate(privateBytes, publicBytes);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+        }
+
+        private static bool SetCertificate(AsymmetricAlgorithm key)
+        {
+            try
+            {
+                byte[] privateBytes = key.ExportPkcs8PrivateKey();
+                byte[] publicBytes = key.ExportSubjectPublicKeyInfo();
+                return SetCertificate(privateBytes, publicBytes);
+            }
+            catch (CryptographicException)
+            {
+                return false;
+            }
+        }
+
+        private static bool SetCertificate(ReadOnlySpan<byte> privateBytes, ReadOnlySpan<byte> publicBytes)
+        {
+            string privateKey = new(PemEncoding.Write("PRIVATE KEY", privateBytes));
+            string publicKey = new(PemEncoding.Write("PUBLIC KEY", publicBytes));
+
+            return SetCertificate(publicKey, privateKey, false);
+        }
+#endif
+#endif
 #if NET7_0_OR_GREATER
         private static partial class Natives
         {

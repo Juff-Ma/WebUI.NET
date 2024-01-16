@@ -11,6 +11,8 @@
 #endif
 
 using System;
+using System.IO;
+
 #if NET7_0_OR_GREATER
 using System.Runtime.CompilerServices;
 #endif
@@ -111,6 +113,9 @@ namespace WebUI
             return new Window(handle, false);
         }
 
+        /// <summary>
+        /// Finalizes an instance of the <see cref="Window"/> class.
+        /// </summary>
         ~Window() => Dispose(false);
 
         public bool Fullscreen
@@ -173,6 +178,20 @@ namespace WebUI
             }
 
             _disposed = true;
+        }
+
+        public void SetRootFolder(string folder)
+        {
+            ThrowIfDisposedOrInvalid();
+            if (!Natives.WebUISetRootFolder(_handle, folder))
+            {
+                throw new DirectoryNotFoundException("Specified folder does not exist or is invalid in another way");
+            }
+        }
+
+        public void SetRootFolder(DirectoryInfo folder)
+        {
+            SetRootFolder(folder.FullName);
         }
 #if NET7_0_OR_GREATER
         private static partial class Natives
