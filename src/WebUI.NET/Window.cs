@@ -118,13 +118,22 @@ namespace WebUI
         /// </summary>
         ~Window() => Dispose(false);
 
-        public bool Fullscreen
+        public void SetFullscreen(bool value)
         {
-            set
-            {
-                ThrowIfDisposedOrInvalid();
-                Natives.WebUISetKiosk(_handle, value);
-            }
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetKiosk(_handle, value);
+        }
+
+        public void SetHidden(bool value)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetHidden(_handle, value);
+        }
+
+        public void SetSize(uint width, uint height)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetSize(_handle, width, height);
         }
 
         public bool IsShown
