@@ -136,6 +136,18 @@ namespace WebUI
             Natives.WebUISetSize(_handle, width, height);
         }
 
+        public void SetPosition(uint x, uint y)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetPosition(_handle, x, y);
+        }
+
+        public void SetPort(uint port)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetPort(_handle, new UIntPtr(port));
+        }
+
         public bool IsShown
         {
             get
