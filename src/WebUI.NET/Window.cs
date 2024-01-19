@@ -11,12 +11,14 @@
 #endif
 
 using System;
+using System.Diagnostics;
 using System.IO;
 
 #if NET7_0_OR_GREATER
 using System.Runtime.CompilerServices;
 #endif
 using System.Runtime.InteropServices;
+
 using WebUI.Events;
 
 namespace WebUI
@@ -213,6 +215,21 @@ namespace WebUI
         public void SetRootFolder(DirectoryInfo folder)
         {
             SetRootFolder(folder.FullName);
+        }
+
+        public Process GetBrowserMainProcess()
+        {
+            ThrowIfDisposedOrInvalid();
+            int processId = Convert.ToInt32(Natives.WebUIGetParentProcessId(_handle).ToUInt64());
+            return Process.GetProcessById(processId);
+
+        }
+
+        public Process GetBrowserChildProcess()
+        {
+            ThrowIfDisposedOrInvalid();
+            int processId = Convert.ToInt32(Natives.WebUIGetChildProcessId(_handle));
+            return Process.GetProcessById(processId);
         }
 #if NET7_0_OR_GREATER
         private static partial class Natives
