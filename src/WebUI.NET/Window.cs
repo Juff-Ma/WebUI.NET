@@ -87,6 +87,58 @@ namespace WebUI
 
         private readonly WindowHandle _handle;
 
+        public void ApplyWindowProperties(WindowProperties properties)
+        {
+            SetFullscreen(properties.Fullscreen);
+            SetHidden(properties.Hidden);
+
+            if (properties.Width.HasValue && properties.Height.HasValue)
+            {
+                SetSize(properties.Width.Value, properties.Height.Value);
+            }
+
+            if (properties.X.HasValue && properties.Y.HasValue)
+            {
+                SetPosition(properties.X.Value, properties.Y.Value);
+            }
+
+            if (properties.Port.HasValue)
+            {
+                SetPort(properties.Port.Value);
+            }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            if (properties.Icon is { })
+            {
+                SetIcon(properties.Icon);
+            }
+
+            if (!string.IsNullOrEmpty(properties.RootFolder))
+            {
+                SetRootFolder(properties.RootFolder);
+            }
+
+            if (!string.IsNullOrEmpty(properties.ProxyServer))
+            {
+                SetProxyServer(properties.ProxyServer);
+            }
+#else
+            if (!(properties.Icon is null))
+            {
+                SetIcon(properties.Icon);
+            }
+
+            if (!(properties.RootFolder is null) && properties.RootFolder == "")
+            {
+                SetRootFolder(properties.RootFolder);
+            }
+
+            if (!(properties.ProxyServer is null) && properties.ProxyServer == "")
+            {
+                SetProxyServer(properties.ProxyServer);
+            }
+#endif
+        }
+
         internal Window(IntPtr windowHandle, bool isMainInstance = true)
         {
             _handle = new WindowHandle(windowHandle, isMainInstance);
@@ -95,6 +147,16 @@ namespace WebUI
         public Window() : this(Natives.WebUINewWindow()) { }
 
         public Window(int windowId) : this(Natives.WebUINewWindow(new IntPtr(windowId))) { }
+
+        public Window(WindowProperties properties) : this()
+        {
+            ApplyWindowProperties(properties);
+        }
+
+        public Window(int windowId, WindowProperties properties) : this(windowId)
+        {
+            ApplyWindowProperties(properties);
+        }
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static Window? GetWindowById(int id)
@@ -150,6 +212,24 @@ namespace WebUI
             Natives.WebUISetPort(_handle, new UIntPtr(port));
         }
 
+        public void SetIcon(string svgString)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetIcon(_handle, svgString, "image/svg+xml");
+        }
+
+        public void SetIcon(Icon icon)
+        {
+            ThrowIfDisposedOrInvalid();
+            if (icon.Type == Icon.IconType.Svg && icon.SvgData != string.Empty)
+            {
+                Natives.WebUISetIcon(_handle, icon.SvgData, "image/svg+xml");
+                return;
+            }
+
+            Natives.WebUISetIcon(_handle, icon.Data, Icon.IconTypeToMimeType(icon.Type));
+        }
+
         public bool IsShown
         {
             get
@@ -157,6 +237,25 @@ namespace WebUI
                 ThrowIfDisposedOrInvalid();
                 return Natives.WebUIWindowIsShown(_handle);
             }
+        }
+
+        public string CurrentUrl
+        {
+            get
+            {
+                ThrowIfDisposedOrInvalid();
+                return Natives.WebUIGetUrl(_handle);
+            }
+            set
+            {
+                Navigate(value);
+            }
+        }
+
+        public void Navigate(string url)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUINavigate(_handle, url);
         }
 
         public static int GetNewWindowId()
@@ -215,6 +314,29 @@ namespace WebUI
         public void SetRootFolder(DirectoryInfo folder)
         {
             SetRootFolder(folder.FullName);
+        }
+
+        public void SetBrowserProfile(string name, string path)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetProfile(_handle, name, path);
+        }
+
+        public void SetBrowserProfile(BrowserProfile profile)
+        {
+            SetBrowserProfile(profile.Name, profile.Path);
+        }
+
+        public void DeleteBrowserProfile()
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUIDeleteProfile(_handle);
+        }
+
+        public void SetProxyServer(string proxy)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetProxy(_handle, proxy);
         }
 
         public Process GetBrowserMainProcess()
@@ -298,7 +420,12 @@ namespace WebUI
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_icon")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-            public static partial void WebUISetIcon(IntPtr windowHandle, string icon, string iconType);
+            public static partial void WebUISetIcon(WindowHandle windowHandle, string icon, string iconType);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_icon")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial void WebUISetIcon(WindowHandle windowHandle,
+                [MarshalAs(UnmanagedType.LPArray)]in byte[] icon, string iconType);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_send_raw")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -460,6 +587,12 @@ namespace WebUI
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
+                EntryPoint = "webui_set_icon")]
+            public static extern void WebUISetIcon(WindowHandle windowHandle,
+                [MarshalAs(UnmanagedType.LPArray), In] byte[] icon, string iconType);
+
+            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+                ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_send_raw")]
             public static extern void WebUISendRaw(WindowHandle windowHandle, string function,
                 [MarshalAs(UnmanagedType.LPArray), In] byte[] data, UIntPtr length);
@@ -487,7 +620,7 @@ namespace WebUI
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_set_profile")]
-            public static extern void WebUISetProfile(IntPtr windowHandle, string name, string path);
+            public static extern void WebUISetProfile(WindowHandle windowHandle, string name, string path);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
