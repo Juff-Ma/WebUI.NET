@@ -320,6 +320,31 @@ namespace WebUI
             Natives.WebUISendRaw(_handle, function, data, new UIntPtr((uint)data.Length));
         }
 
+        public ulong RegisterEventHandler(IEventHandler eventHandler) => RegisterEventHandler(eventHandler, string.Empty);
+
+        public ulong RegisterEventHandler(IEventHandler eventHandler, string element)
+        {
+            ThrowIfDisposedOrInvalid();
+            return Natives.WebUIBind(_handle, element,
+                (windowHandle,
+                eventType,
+                elementName,
+                eventId, bindId) =>
+            {
+                var @event = new Event(windowHandle, eventId, eventType);
+                var value = eventHandler.HandleEvent(@event, elementName, bindId.ToUInt64());
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+                if (value is { })
+#else
+                if (!(value is null))
+#endif
+                {
+                    @event.ReturnValue(value.ToString());
+                }
+
+            }).ToUInt64();
+        }
+
         public void SetRootFolder(string folder)
         {
             ThrowIfDisposedOrInvalid();
