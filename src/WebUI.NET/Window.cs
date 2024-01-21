@@ -33,7 +33,7 @@ namespace WebUI
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
-        private delegate void EventCallback(UIntPtr windowHandle,
+        private delegate void EventCallback(IntPtr windowHandle,
             [MarshalAs(UnmanagedType.SysUInt)] EventType eventType, string element,
             UIntPtr eventId, UIntPtr bindId);
 
@@ -302,6 +302,24 @@ namespace WebUI
             _disposed = true;
         }
 
+        public void InvokeJavaScript(string js)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUIRun(_handle, js);
+        }
+
+        public bool InvokeJavaScript(string js, ref byte[] buffer)
+        {
+            ThrowIfDisposedOrInvalid();
+            return Natives.WebUIRun(_handle, js, ref buffer, new UIntPtr((uint)buffer.Length));
+        }
+
+        public void InvokeJavaScript(string function, byte[] data)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISendRaw(_handle, function, data, new UIntPtr((uint)data.Length));
+        }
+
         public void SetRootFolder(string folder)
         {
             ThrowIfDisposedOrInvalid();
@@ -337,6 +355,12 @@ namespace WebUI
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetProxy(_handle, proxy);
+        }
+
+        public void SetJavaScriptRuntime(Runtime runtime)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetRuntime(_handle, runtime);
         }
 
         public Process GetBrowserMainProcess()
@@ -494,7 +518,7 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_script")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static partial bool WebUIRun(WindowHandle windowHandle, string function,
+            public static partial bool WebUIRun(WindowHandle windowHandle, string javaScript,
                 [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_runtime")]
@@ -673,7 +697,7 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_script")]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebUIRun(WindowHandle windowHandle, string function,
+            public static extern bool WebUIRun(WindowHandle windowHandle, string javaScript,
                 [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
