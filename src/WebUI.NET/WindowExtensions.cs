@@ -8,6 +8,8 @@
 #nullable enable
 #endif
 
+using WebUI.Events;
+
 namespace WebUI
 {
     public static class WindowExtensions
@@ -62,6 +64,14 @@ namespace WebUI
                 window.SetProxyServer(properties.ProxyServer);
             }
 #endif
+        }
+
+        public static DefaultEventHandler RegisterDefaultEventHandler(this Window window)
+        {
+            var handler = new DefaultEventHandler();
+            handler.UsedHandlerId = window.RegisterEventHandler(handler);
+
+            return handler;
         }
     }
 }
