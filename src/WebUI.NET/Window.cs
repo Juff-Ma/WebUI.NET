@@ -87,58 +87,6 @@ namespace WebUI
 
         private readonly WindowHandle _handle;
 
-        public void ApplyWindowProperties(WindowProperties properties)
-        {
-            SetFullscreen(properties.Fullscreen);
-            SetHidden(properties.Hidden);
-
-            if (properties.Width.HasValue && properties.Height.HasValue)
-            {
-                SetSize(properties.Width.Value, properties.Height.Value);
-            }
-
-            if (properties.X.HasValue && properties.Y.HasValue)
-            {
-                SetPosition(properties.X.Value, properties.Y.Value);
-            }
-
-            if (properties.Port.HasValue)
-            {
-                SetPort(properties.Port.Value);
-            }
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-            if (properties.Icon is { })
-            {
-                SetIcon(properties.Icon);
-            }
-
-            if (!string.IsNullOrEmpty(properties.RootFolder))
-            {
-                SetRootFolder(properties.RootFolder);
-            }
-
-            if (!string.IsNullOrEmpty(properties.ProxyServer))
-            {
-                SetProxyServer(properties.ProxyServer);
-            }
-#else
-            if (!(properties.Icon is null))
-            {
-                SetIcon(properties.Icon);
-            }
-
-            if (!(properties.RootFolder is null) && properties.RootFolder == "")
-            {
-                SetRootFolder(properties.RootFolder);
-            }
-
-            if (!(properties.ProxyServer is null) && properties.ProxyServer == "")
-            {
-                SetProxyServer(properties.ProxyServer);
-            }
-#endif
-        }
-
         internal Window(IntPtr windowHandle, bool isMainInstance = true)
         {
             _handle = new WindowHandle(windowHandle, isMainInstance);
@@ -150,12 +98,12 @@ namespace WebUI
 
         public Window(WindowProperties properties) : this()
         {
-            ApplyWindowProperties(properties);
+            this.ApplyWindowProperties(properties);
         }
 
         public Window(int windowId, WindowProperties properties) : this(windowId)
         {
-            ApplyWindowProperties(properties);
+            this.ApplyWindowProperties(properties);
         }
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
