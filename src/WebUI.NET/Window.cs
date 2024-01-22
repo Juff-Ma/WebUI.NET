@@ -271,6 +271,20 @@ namespace WebUI
         public ulong RegisterEventHandler(IEventHandler eventHandler) => RegisterEventHandler(eventHandler, string.Empty);
 
         public ulong RegisterEventHandler(IEventHandler eventHandler, string element)
+            => RegisterEventHandler(eventHandler.HandleEvent, element);
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public ulong RegisterEventHandler(Func<Event, string, ulong, object?> eventHandler)
+#else
+        public ulong RegisterEventHandler(Func<Event, string, ulong, object> eventHandler)
+#endif
+        => RegisterEventHandler(eventHandler, string.Empty);
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public ulong RegisterEventHandler(Func<Event, string, ulong, object?> eventHandler, string element)
+#else
+        public ulong RegisterEventHandler(Func<Event, string, ulong, object> eventHandler, string element)
+#endif
         {
             ThrowIfDisposedOrInvalid();
             return Natives.WebUIBind(_handle, element,
@@ -278,19 +292,19 @@ namespace WebUI
                 eventType,
                 elementName,
                 eventId, bindId) =>
-            {
-                var @event = new Event(windowHandle, eventId, eventType);
-                var value = eventHandler.HandleEvent(@event, elementName, bindId.ToUInt64());
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-                if (value is { })
-#else
-                if (!(value is null))
-#endif
                 {
-                    @event.ReturnValue(value.ToString());
-                }
+                    var @event = new Event(windowHandle, eventId, eventType);
+                    var value = eventHandler(@event, elementName, bindId.ToUInt64());
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+                    if (value is { })
+#else
+                    if (!(value is null))
+#endif
+                    {
+                        @event.ReturnValue(value.ToString());
+                    }
 
-            }).ToUInt64();
+                }).ToUInt64();
         }
 
         public void SetRootFolder(string folder)
