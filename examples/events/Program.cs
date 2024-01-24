@@ -15,9 +15,7 @@ defaultHandler.OnDisconnect += (_) => Console.WriteLine("Disconnected");
 
 ClickHandler handler = new();
 
-ulong id = window.RegisterEventHandler(handler, "click");
-
-handler.HandlerId = id;
+handler.HandlerId = window.RegisterEventHandler(handler, "click");
 
 window.Show("""
 <html>
