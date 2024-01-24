@@ -5,6 +5,8 @@ using Events;
 
 Window window = new();
 
+// the default event handler handles common events like Connect, Disconnect or Navigate and exposes them as C# events
+// you can also create your own event handler for those if you register without an element name (string.Empty or "") and check event.Type
 var defaultHandler = window.RegisterDefaultEventHandler();
 
 defaultHandler.OnConnect += (_) => Console.WriteLine("Connected");
@@ -44,6 +46,7 @@ namespace Events
         public object? HandleEvent(Event @event, string element, ulong handlerId)
         {
             // You have to always check if the handlerId matches, otherwise your logic could run multiple times.
+            // if you register for all elements you would also have to check if the element matches
             if (HandlerId == handlerId)
             {
                 Console.WriteLine($"Click {_clicks++}");
