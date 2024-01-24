@@ -88,7 +88,7 @@ namespace WebUI
 
         private readonly WindowHandle _handle;
 
-        private readonly List<EventCallback> _eventCallbacks = new List<EventCallback>();
+        private readonly List<object> _callbacks = new List<object>();
 
         internal Window(IntPtr windowHandle, bool isMainInstance = true)
         {
@@ -249,7 +249,7 @@ namespace WebUI
                 return;
             }
 
-            foreach (var callback in _eventCallbacks)
+            foreach (var callback in _callbacks)
             {
                 GC.KeepAlive(callback);
             }
@@ -301,10 +301,10 @@ namespace WebUI
         {
             ThrowIfDisposedOrInvalid();
 
-            EventCallback callback = (windowHandle,
-                eventType,
-                elementName,
-                eventId, bindId) =>
+            EventCallback callback = (IntPtr windowHandle,
+                UIntPtr eventType,
+                string elementName,
+                UIntPtr eventId, UIntPtr bindId) =>
             {
                 ulong intType = eventType.ToUInt64();
                 if (!Enum.IsDefined(typeof(EventType), intType))
@@ -325,9 +325,39 @@ namespace WebUI
 
             };
 
-            _eventCallbacks.Add(callback);
+            _callbacks.Add(callback);
 
             return Natives.WebUIBind(_handle, element, callback).ToUInt64();
+        }
+
+        public void RegisterFileHandler(IFileHandler fileHandler) => RegisterFileHandler(fileHandler.GetFile);
+
+        public void RegisterFileHandler(Func<string, byte[]> fileHandler)
+        {
+            ThrowIfDisposedOrInvalid();
+
+            FileHandler callback = (string path, out int length) =>
+            {
+                var data = fileHandler(path);
+
+                if (data is null)
+                {
+                    length = 0;
+                    return IntPtr.Zero;
+                }
+
+                length = data.Length;
+
+                // WebUI will free automatically if allocated using its malloc method
+                IntPtr webuiCopy = Utils.Malloc(new UIntPtr((uint)data.Length));
+                Marshal.Copy(data, 0, webuiCopy, data.Length);
+
+                return webuiCopy;
+            };
+
+            _callbacks.Add(callback);
+
+            Natives.WebUISetFileHandler(_handle, callback);
         }
 
         public void SetRootFolder(string folder)
