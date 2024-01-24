@@ -11,6 +11,7 @@
 #endif
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -34,7 +35,7 @@ namespace WebUI
             BestFitMapping = false, ThrowOnUnmappableChar = false,
             CharSet = CharSet.Ansi)]
         private delegate void EventCallback(IntPtr windowHandle,
-            [MarshalAs(UnmanagedType.SysUInt)] EventType eventType, string element,
+            UIntPtr eventType, string element,
             UIntPtr eventId, UIntPtr bindId);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl,
@@ -86,6 +87,8 @@ namespace WebUI
         private bool _disposed;
 
         private readonly WindowHandle _handle;
+
+        private readonly List<EventCallback> _eventCallbacks = new List<EventCallback>();
 
         internal Window(IntPtr windowHandle, bool isMainInstance = true)
         {
@@ -241,6 +244,16 @@ namespace WebUI
                 return;
             }
 
+            if (_handle.IsInvalid || _handle.IsClosed)
+            {
+                return;
+            }
+
+            foreach (var callback in _eventCallbacks)
+            {
+                GC.KeepAlive(callback);
+            }
+
             if (disposing)
             {
                 _handle.SetHandleAsInvalid();
@@ -287,24 +300,34 @@ namespace WebUI
 #endif
         {
             ThrowIfDisposedOrInvalid();
-            return Natives.WebUIBind(_handle, element,
-                (windowHandle,
+
+            EventCallback callback = (windowHandle,
                 eventType,
                 elementName,
                 eventId, bindId) =>
+            {
+                ulong intType = eventType.ToUInt64();
+                if (!Enum.IsDefined(typeof(EventType), intType))
                 {
-                    var @event = new Event(windowHandle, eventId, eventType);
-                    var value = eventHandler(@event, elementName, bindId.ToUInt64());
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-                    if (value is { })
-#else
-                    if (!(value is null))
-#endif
-                    {
-                        @event.ReturnValue(value.ToString());
-                    }
+                    return;
+                }
 
-                }).ToUInt64();
+                var @event = new Event(windowHandle, eventId, (EventType)intType);
+                var value = eventHandler(@event, elementName, bindId.ToUInt64());
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+                if (value is { })
+#else
+                if (!(value is null))
+#endif
+                {
+                    @event.ReturnValue(value.ToString());
+                }
+
+            };
+
+            _eventCallbacks.Add(callback);
+
+            return Natives.WebUIBind(_handle, element, callback).ToUInt64();
         }
 
         public void SetRootFolder(string folder)

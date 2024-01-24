@@ -8,7 +8,7 @@
 
 namespace WebUI.Events
 {
-    public enum EventType : uint
+    public enum EventType : ulong
     {
         Disconnect = 0,
         Connect = 1,
