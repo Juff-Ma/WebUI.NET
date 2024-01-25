@@ -88,7 +88,14 @@ namespace WebUI
 
         private readonly WindowHandle _handle;
 
-        private readonly List<object> _callbacks = new List<object>();
+        private readonly List<EventCallback> _callbacks = new List<EventCallback>();
+
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        private FileHandler? _fileHandler = null;
+#else
+        private FileHandler _fileHandler = null;
+#endif
 
         internal Window(IntPtr windowHandle, bool isMainInstance = true)
         {
@@ -253,6 +260,14 @@ namespace WebUI
             {
                 GC.KeepAlive(callback);
             }
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            if (_fileHandler is { })
+#else
+            if (!(_fileHandler is null))
+#endif
+            {
+                GC.KeepAlive(_fileHandler);
+            }
 
             if (disposing)
             {
@@ -330,9 +345,13 @@ namespace WebUI
             return Natives.WebUIBind(_handle, element, callback).ToUInt64();
         }
 
-        public void RegisterFileHandler(IFileHandler fileHandler) => RegisterFileHandler(fileHandler.GetFile);
+        public void SetFileHandler(IFileHandler fileHandler) => SetFileHandler(fileHandler.GetFile);
 
-        public void RegisterFileHandler(Func<string, byte[]> fileHandler)
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public void SetFileHandler(Func<string, byte[]?> fileHandler)
+#else
+        public void SetFileHandler(Func<string, byte[]> fileHandler)
+#endif
         {
             ThrowIfDisposedOrInvalid();
 
@@ -355,7 +374,7 @@ namespace WebUI
                 return webuiCopy;
             };
 
-            _callbacks.Add(callback);
+            _fileHandler = callback;
 
             Natives.WebUISetFileHandler(_handle, callback);
         }
