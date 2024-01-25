@@ -5,7 +5,7 @@ Window window = new();
 
 int count = 1;
 
-window.RegisterFileHandler((path) =>
+window.SetFileHandler((path) =>
 {
     if (path == "/dynamic.html")
     {
