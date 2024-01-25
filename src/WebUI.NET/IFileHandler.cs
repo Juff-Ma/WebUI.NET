@@ -10,8 +10,19 @@
 
 namespace WebUI
 {
+    /// <summary>
+    /// Interface representing a handler for dynamic files/content, should not be called manually
+    /// </summary>
     public interface IFileHandler
     {
+        /// <summary>
+        /// Handler for dynamic files
+        /// </summary>
+        /// <param name="path">the path of the file currently being loaded starting with an initial '/'</param>
+        /// <returns>
+        /// a <see cref="byte"/> array if the file is dynamic containing the contents of the file
+        /// otherwise returns null
+        /// </returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         byte[]? GetFile(string path);
 #else

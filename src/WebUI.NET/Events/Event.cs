@@ -14,6 +14,9 @@ using System.Runtime.InteropServices;
 
 namespace WebUI.Events
 {
+    /// <summary>
+    /// Class representing a WebUI event
+    /// </summary>
 #if NET7_0_OR_GREATER
     public sealed partial class Event
     {
@@ -21,9 +24,12 @@ namespace WebUI.Events
     public sealed class Event
     {
 #endif
-        private IntPtr _windowId;
-        private UIntPtr _eventId;
+        private readonly IntPtr _windowId;
+        private readonly UIntPtr _eventId;
 
+        /// <summary>
+        /// The type of the event
+        /// </summary>
         public EventType Type { get; }
 
         internal Event(IntPtr windowId, UIntPtr eventId, EventType type)
@@ -34,41 +40,81 @@ namespace WebUI.Events
             Type = type;
         }
 
+        /// <summary>
+        /// Gets the associated <see cref="WebUI.Window"/>
+        /// </summary>
         public Window Window
         {
             get => new Window(_windowId, false);
         }
 
+        private void ThrowOnInvalidHandle()
+        {
+            if (!Window.IsHandleValid(_windowId))
+            {
+                throw new InvalidOperationException("Window handle is invalid.");
+            }
+        }
+
+        /// <summary>
+        /// Gets the a string argument from the event
+        /// </summary>
+        /// <returns>the string</returns>
         public string GetString() => GetString(0U);
 
+        /// <inheritdoc cref="GetString()"/>
+        /// <param name="index">The index of the argument</param>
         public string GetString(uint index)
         {
+            ThrowOnInvalidHandle();
             return Natives.WebUIGetString(_windowId, _eventId, new UIntPtr(index));
         }
 
+        /// <summary>
+        /// Gets a number argument from the event
+        /// </summary>
+        /// <returns>the number as <see cref="long"/></returns>
         public long GetNumber() => GetNumber(0U);
 
+        /// <inheritdoc cref="GetNumber()"/>
+        /// <param name="index">The index of the argument</param>
         public long GetNumber(uint index)
         {
+            ThrowOnInvalidHandle();
             return Natives.WebUIGetInt(_windowId, _eventId, new UIntPtr(index));
         }
 
+        /// <summary>
+        /// Gets a boolean argument from the event
+        /// </summary>
+        /// <returns>the boolean</returns>
         public bool GetBool() => GetBool(0U);
 
+        /// <inheritdoc cref="GetBool()"/>
+        /// <param name="index">The index of the argument</param>
         public bool GetBool(uint index)
         {
+            ThrowOnInvalidHandle();
             return Natives.WebUIGetBool(_windowId, _eventId, new UIntPtr(index));
         }
 
+        /// <summary>
+        /// Gets the size of an argument from the event
+        /// </summary>
+        /// <returns>the size in bytes</returns>
         public ulong GetSize() => GetSize(0U);
 
+        /// <inheritdoc cref="GetSize()"/>
+        /// <param name="index">The index of the argument</param>
         public ulong GetSize(uint index)
         {
+            ThrowOnInvalidHandle();
             return Natives.WebUIGetSize(_windowId, _eventId, new UIntPtr(index)).ToUInt64();
         }
 
         internal void ReturnValue(string value)
         {
+            ThrowOnInvalidHandle();
             Natives.WebUIReturn(_windowId, _eventId, value);
         }
 

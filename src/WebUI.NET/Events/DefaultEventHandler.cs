@@ -10,19 +10,32 @@
 
 namespace WebUI.Events
 {
+    /// <summary>
+    /// A default implementation of <see cref="IEventHandler"/> that exposes 
+    /// <see cref="EventType.Connect"/>, <see cref="EventType.Disconnect"/>, <see cref="EventType.Click"/> and <see cref="EventType.Navigation"/>
+    /// as C# events
+    /// </summary>
     public sealed class DefaultEventHandler : IEventHandler
     {
         public delegate void DefaultCallback(Window window);
         public delegate void ClickCallback(Window window, string elementId);
         public delegate void NavigationCallback(Window window, string url);
 
+        /// <summary>
+        /// The id returned by <see cref="Window.RegisterEventHandler(IEventHandler)"/> to be compared to <br/>
+        /// Should not be set manually as <see cref="WindowExtensions.RegisterDefaultEventHandler(Window)"/> takes care of it
+        /// </summary>
         public ulong UsedHandlerId { get; set; }
 
+        /// <summary>
+        /// Creates a new <see cref="DefaultEventHandler"/>
+        /// </summary>
         public DefaultEventHandler()
         {
             UsedHandlerId = 0;
         }
 
+        /// <inheritdoc />
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public object? HandleEvent(Event @event, string element, ulong handlerId)
 #else
@@ -50,9 +63,21 @@ namespace WebUI.Events
         }
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        /// <summary>
+        /// Window connect event
+        /// </summary>
         public event DefaultCallback? OnConnect;
+        /// <summary>
+        /// Window disconnect event
+        /// </summary>
         public event DefaultCallback? OnDisconnect;
+        /// <summary>
+        /// Window click event
+        /// </summary>
         public event ClickCallback? OnClick;
+        /// <summary>
+        /// Window navigation event
+        /// </summary>
         public event NavigationCallback? OnNavigation;
 
         private void HandleConnect(Window window)
@@ -87,9 +112,21 @@ namespace WebUI.Events
             }
         }
 #else
+        /// <summary>
+        /// Window connect event
+        /// </summary>
         public event DefaultCallback OnConnect;
+        /// <summary>
+        /// Window disconnect event
+        /// </summary>
         public event DefaultCallback OnDisconnect;
+        /// <summary>
+        /// Window click event
+        /// </summary>
         public event ClickCallback OnClick;
+        /// <summary>
+        /// Window navigation event
+        /// </summary>
         public event NavigationCallback OnNavigation;
 
         private void HandleConnect(Window window)

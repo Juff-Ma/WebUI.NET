@@ -4,14 +4,24 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-//TODO: Add Comments
-
 namespace WebUI
 {
+    /// <summary>
+    /// Enum representing possible WebUI JavaScript runtimes
+    /// </summary>
     public enum Runtime : uint
     {
+        /// <summary>
+        /// No runtime at all
+        /// </summary>
         None = 0,
+        /// <summary>
+        /// The Deno JavaScript runtime
+        /// </summary>
         Deno = 1,
+        /// <summary>
+        /// The NodeJS JavaScript runtime
+        /// </summary>
         NodeJS = 2
     }
 }

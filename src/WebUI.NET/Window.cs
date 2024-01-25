@@ -50,7 +50,7 @@ namespace WebUI
         /// <returns>
         ///   <c>true</c> if <paramref name="handle"/> is valid; otherwise, <c>false</c>.
         /// </returns>
-        private static bool IsHandleValid(IntPtr handle)
+        internal static bool IsHandleValid(IntPtr handle)
         {
             return handle != IntPtr.Zero;
         }

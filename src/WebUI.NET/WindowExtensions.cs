@@ -12,8 +12,16 @@ using WebUI.Events;
 
 namespace WebUI
 {
+    /// <summary>
+    /// Class containing extension methods for <see cref="Window"/>
+    /// </summary>
     public static class WindowExtensions
     {
+        /// <summary>
+        /// Applies the given <see cref="WindowProperties"/> to Window, should be called before <see cref="Window.Show(string)"/>
+        /// </summary>
+        /// <param name="window">The window to which the properties should be applied</param>
+        /// <param name="properties">the <see cref="WindowProperties"/> to be applied</param>
         public static void ApplyWindowProperties(this Window window, WindowProperties properties)
         {
             window.SetFullscreen(properties.Fullscreen);
@@ -38,7 +46,12 @@ namespace WebUI
             {
                 window.SetIcon(properties.Icon);
             }
-
+#else
+            if (!(properties.Icon is null))
+            {
+                window.SetIcon(properties.Icon);
+            }
+#endif
             if (!string.IsNullOrEmpty(properties.RootFolder))
             {
                 window.SetRootFolder(properties.RootFolder);
@@ -48,24 +61,13 @@ namespace WebUI
             {
                 window.SetProxyServer(properties.ProxyServer);
             }
-#else
-            if (!(properties.Icon is null))
-            {
-                window.SetIcon(properties.Icon);
-            }
-
-            if (!(properties.RootFolder is null) && properties.RootFolder == "")
-            {
-                window.SetRootFolder(properties.RootFolder);
-            }
-
-            if (!(properties.ProxyServer is null) && properties.ProxyServer == "")
-            {
-                window.SetProxyServer(properties.ProxyServer);
-            }
-#endif
         }
 
+        /// <summary>
+        /// Registers a new <see cref="DefaultEventHandler"/> containing C# friendly Events
+        /// </summary>
+        /// <param name="window">The window that the <see cref="DefaultEventHandler"/> should be registered for</param>
+        /// <returns>the registered <see cref="DefaultEventHandler"/></returns>
         public static DefaultEventHandler RegisterDefaultEventHandler(this Window window)
         {
             var handler = new DefaultEventHandler();
