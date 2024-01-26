@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-//TODO: Add Comments
-
 // Ignore Spelling: Utils Malloc Tls Pem App
 
 using System;
@@ -22,9 +20,11 @@ using System.Runtime.CompilerServices;
 #endif
 using System.Runtime.InteropServices;
 
-
 namespace WebUI
 {
+    /// <summary>
+    /// Utility Class for non specific functionality
+    /// </summary>
 #if NET7_0_OR_GREATER
     public static partial class Utils
     {
@@ -32,31 +32,52 @@ namespace WebUI
     public static class Utils
     {
 #endif
+        /// <summary>
+        /// Waits for all Windows to close or for <see cref="ForceExit()"/> to be called
+        /// </summary>
         public static void WaitForExit()
         {
             Natives.WebUIWait();
         }
 
+        /// <summary>
+        /// Closes all Windows
+        /// </summary>
         public static void ForceExit()
         {
             Natives.WebUIExit();
         }
 
+        /// <summary>
+        /// Frees all memory resources used by WebUI, should be called after <see cref="WaitForExit()"/> and <see cref="DeleteAllProfiles()"/>
+        /// </summary>
         public static void Clean()
         {
             Natives.WebUIClean();
         }
 
+        /// <summary>
+        /// Sets the maximum time WebUI will wait for the browser to startz
+        /// </summary>
+        /// <param name="seconds">The time in seconds</param>
         public static void SetStartupTimeout(uint seconds)
         {
             Natives.WebUISetTimeout(new UIntPtr(seconds));
         }
 
+        /// <inheritdoc cref="SetStartupTimeout(uint)"/>
+        /// <param name="timeout"><see cref="TimeSpan"/> representing the timeout, all units smaller than seconds will be ignored</param>
         public static void SetStartupTimeout(TimeSpan timeout)
         {
             SetStartupTimeout((uint)timeout.TotalSeconds);
         }
 
+        /// <summary>
+        /// Sets the default root folder to use for all Windows,
+        /// should be called before any <see cref="Window.Show(string)"/> call
+        /// </summary>
+        /// <param name="folder">the folder to set the global root to</param>
+        /// <exception cref="DirectoryNotFoundException">The specified folder does not exist or is invalid in another way</exception>
         public static void SetGlobalRootFolder(string folder)
         {
             if (!Natives.WebUISetDefaultRootFolder(folder))
@@ -65,11 +86,16 @@ namespace WebUI
             }
         }
 
+        /// <param name="folder"><see cref="DirectoryInfo"/> containing the path to the new global root folder</param>
+        /// <inheritdoc cref="SetGlobalRootFolder(string)"/>
         public static void SetGlobalRootFolder(DirectoryInfo folder)
         {
             SetGlobalRootFolder(folder.FullName);
         }
 
+        /// <summary>
+        /// Deletes all WebUI browser profiles
+        /// </summary>
         public static void DeleteAllProfiles()
         {
             Natives.WebUIDeleteProfiles();
@@ -95,21 +121,46 @@ namespace WebUI
             return Natives.WebUIDecode(@string);
         }
 
+        /// <summary>
+        /// Internal allocator for WebUI, WebUI will automatically free if used correcly
+        /// </summary>
+        /// <param name="size">Size in bytes to be allocated</param>
+        /// <returns>pointer to allocated memory</returns>
         internal static IntPtr Malloc(UIntPtr size)
         {
             return Natives.WebUIMalloc(size);
         }
 
+        /// <summary>
+        /// Frees WebUI memory
+        /// </summary>
+        /// <param name="ptr">pointer to allocated memory</param>
         internal static void Free(IntPtr ptr)
         {
             Natives.WebUIFree(ptr);
         }
 
+        /// <summary>
+        /// Checks if any Windows are currently open
+        /// </summary>
+        /// <returns><c>true</c> if at least 1 window is open otherwise <c>false</c></returns>
         public static bool AreWindowsOpen()
         {
             return Natives.WebUIIsAppRunning();
         }
 
+        /// <summary>
+        /// Sets a certificate for WebUI to use for secure connections. Must be called before <see cref="Window.Show(string)"/> <br/>
+        /// <br/>
+        /// IMPORTANT: requires secure natives and will do nothing with normal natives.
+        /// if not called when using secure natives WebUI will generate a self signed certificate
+        /// </summary>
+        /// <param name="certificatePem">File name or contents of the public key/certificate in PEM format</param>
+        /// <param name="privateKeyPem">File name or contents of the private key in unencrypted PEM format</param>
+        /// <param name="loadFromFile">Set to <c>true</c> if contents should be loaded from file (default)
+        /// or <c>false</c> if contents should be loaded from <paramref name="certificatePem"/> and <paramref name="privateKeyPem"/> directly
+        /// </param>
+        /// <returns><c>true</c> if successfully set or <c>false</c> if there was an Error</returns>
         public static bool SetCertificate(string certificatePem, string privateKeyPem, bool loadFromFile = true)
         {
             if (!loadFromFile)
@@ -120,21 +171,34 @@ namespace WebUI
             return Natives.WebUISetTlsCertificate(File.ReadAllText(certificatePem), File.ReadAllText(privateKeyPem));
         }
 
+        /// <param name="certificatePem"><see cref="FileInfo"/> containing the path to the public key/certificate in PEM format</param>
+        /// <param name="privateKeyPem"><see cref="FileInfo"/> containing the path to the private key in unencrypted PEM format</param>
+        /// <inheritdoc cref="SetCertificate(string, string, bool)"/>
         public static bool SetCertificate(FileInfo certificatePem, FileInfo privateKeyPem)
         {
             return SetCertificate(certificatePem.FullName, privateKeyPem.FullName);
         }
 
-
 #if NET5_0_OR_GREATER
-        private static AsymmetricAlgorithm? GetKeyFromCertificate(X509Certificate2 certificate)
+
+        /// <param name="certificate">Unencrypted certificate as <see cref="X509Certificate2"/></param>
+        /// <inheritdoc cref="SetCertificate(string, string, bool)"/>
+        public static bool SetCertificate(X509Certificate2 certificate)
         {
-            return (AsymmetricAlgorithm?)certificate.GetRSAPrivateKey() ??
-                (AsymmetricAlgorithm?)certificate.GetECDsaPrivateKey() ??
-                (AsymmetricAlgorithm?)certificate.GetECDiffieHellmanPrivateKey() ??
-                certificate.GetDSAPrivateKey();
+            var key = GetKeyFromCertificate(certificate);
+
+            if (key is null)
+            {
+                return false;
+            }
+
+            return SetCertificate(key);
         }
 
+        /// <param name="password">Password to the <see cref="X509Certificate2"/></param>
+        /// <param name="parameters"><see cref="PbeParameters"/> for decryption of certificate</param>
+        /// <param name="certificate">Certificate as <see cref="X509Certificate2"/></param>
+        /// <inheritdoc cref="SetCertificate(string, string, bool)"/>
         public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<byte> password, PbeParameters parameters)
         {
             var key = GetKeyFromCertificate(certificate);
@@ -147,6 +211,7 @@ namespace WebUI
             return SetCertificate(key, password, parameters);
         }
 
+        /// <inheritdoc cref="SetCertificate(X509Certificate2, ReadOnlySpan{byte}, PbeParameters)"/>
         public static bool SetCertificate(X509Certificate2 certificate, ReadOnlySpan<char> password, PbeParameters parameters)
         {
             var key = GetKeyFromCertificate(certificate);
@@ -157,18 +222,6 @@ namespace WebUI
             }
 
             return SetCertificate(key, password, parameters);
-        }
-
-        public static bool SetCertificate(X509Certificate2 certificate)
-        {
-            var key = GetKeyFromCertificate(certificate);
-
-            if (key is null)
-            {
-                return false;
-            }
-
-            return SetCertificate(key);
         }
 #if NET7_0_OR_GREATER
         private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters parameters)
@@ -218,7 +271,7 @@ namespace WebUI
             }
         }
 #else
-                private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters parameters)
+        private static bool SetCertificate(AsymmetricAlgorithm key, ReadOnlySpan<byte> password, PbeParameters parameters)
         {
             try
             {
@@ -268,6 +321,14 @@ namespace WebUI
             return SetCertificate(publicKey, privateKey, false);
         }
 #endif
+        private static AsymmetricAlgorithm? GetKeyFromCertificate(X509Certificate2 certificate)
+        {
+            // returns the first found key format or null if none is found
+            return (AsymmetricAlgorithm?)certificate.GetRSAPrivateKey() ??
+                (AsymmetricAlgorithm?)certificate.GetECDsaPrivateKey() ??
+                (AsymmetricAlgorithm?)certificate.GetECDiffieHellmanPrivateKey() ??
+                certificate.GetDSAPrivateKey();
+        }
 #endif
 #if NET7_0_OR_GREATER
         private static partial class Natives

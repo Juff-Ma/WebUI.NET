@@ -11,14 +11,29 @@
 namespace WebUI.Events
 {
     /// <summary>
-    /// A default implementation of <see cref="IEventHandler"/> that exposes 
+    /// A default implementation of <see cref="IEventHandler"/> that exposes
     /// <see cref="EventType.Connect"/>, <see cref="EventType.Disconnect"/>, <see cref="EventType.Click"/> and <see cref="EventType.Navigation"/>
     /// as C# events
     /// </summary>
     public sealed class DefaultEventHandler : IEventHandler
     {
+        /// <summary>
+        /// Default callback with only <paramref name="window"/> as argument
+        /// used for <see cref="OnConnect"/> and <see cref="OnDisconnect"/>
+        /// </summary>
+        /// <param name="window">the <see cref="Window"/> associated with the Event</param>
         public delegate void DefaultCallback(Window window);
+        /// <summary>
+        /// Callback for <see cref="OnClick"/> events
+        /// </summary>
+        /// <param name="window">the <see cref="Window"/> associated with the Event</param>
+        /// <param name="elementId">the element the click originates from</param>
         public delegate void ClickCallback(Window window, string elementId);
+        /// <summary>
+        /// Callback used for <see cref="OnNavigation"/> events
+        /// </summary>
+        /// <param name="window">the <see cref="Window"/> associated with the Event</param>
+        /// <param name="url">the URL the user/the app navigated to</param>
         public delegate void NavigationCallback(Window window, string url);
 
         /// <summary>
@@ -163,4 +178,3 @@ namespace WebUI.Events
 #endif  
     }
 }
-

@@ -4,8 +4,6 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-//TODO: Add Comments
-
 using System;
 #if NET7_0_OR_GREATER
 using System.Runtime.CompilerServices;
@@ -43,11 +41,23 @@ namespace WebUI.Events
         /// <summary>
         /// Gets the associated <see cref="WebUI.Window"/>
         /// </summary>
+        // Why Visual Studio? Why? (VS will show messages if i don't do this)
+#if NET5_0_OR_GREATER
+        public Window Window
+        {
+            get => new(_windowId, false);
+        }
+#else
         public Window Window
         {
             get => new Window(_windowId, false);
         }
+#endif
 
+        /// <summary>
+        /// Throws if the <see cref="WebUI.Window"/> handle is invalid
+        /// </summary>
+        /// <exception cref="InvalidOperationException">The native Window handle was invalid</exception>
         private void ThrowOnInvalidHandle()
         {
             if (!Window.IsHandleValid(_windowId))
@@ -60,6 +70,7 @@ namespace WebUI.Events
         /// Gets the a string argument from the event
         /// </summary>
         /// <returns>the string</returns>
+        /// <inheritdoc cref="ThrowOnInvalidHandle"/>
         public string GetString() => GetString(0U);
 
         /// <inheritdoc cref="GetString()"/>
@@ -74,6 +85,7 @@ namespace WebUI.Events
         /// Gets a number argument from the event
         /// </summary>
         /// <returns>the number as <see cref="long"/></returns>
+        /// <inheritdoc cref="ThrowOnInvalidHandle"/>
         public long GetNumber() => GetNumber(0U);
 
         /// <inheritdoc cref="GetNumber()"/>
@@ -88,6 +100,7 @@ namespace WebUI.Events
         /// Gets a boolean argument from the event
         /// </summary>
         /// <returns>the boolean</returns>
+        /// <inheritdoc cref="ThrowOnInvalidHandle"/>
         public bool GetBool() => GetBool(0U);
 
         /// <inheritdoc cref="GetBool()"/>
@@ -102,6 +115,7 @@ namespace WebUI.Events
         /// Gets the size of an argument from the event
         /// </summary>
         /// <returns>the size in bytes</returns>
+        /// <inheritdoc cref="ThrowOnInvalidHandle"/>
         public ulong GetSize() => GetSize(0U);
 
         /// <inheritdoc cref="GetSize()"/>
