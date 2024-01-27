@@ -23,8 +23,8 @@
 	<Choose>
 		<When Condition="'$(Configuration)' == 'Release'">
 			<ItemGroup>
-				<PackageReference Include="WebUI.NET" Version="*" />
-				<PackageReference Include="WebUI.NET.Natives" Version="*" />
+				<PackageReference Include="WebUI.NET" Version="*-*" />
+				<PackageReference Include="WebUI.NET.Natives" Version="*-*" />
 			</ItemGroup>
 			<PropertyGroup>
 				<RestoreAdditionalProjectSources>
