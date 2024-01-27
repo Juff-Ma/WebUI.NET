@@ -424,14 +424,32 @@ namespace WebUI
         /// </summary>
         /// <param name="js">the JavaScript to be run</param>
         /// <param name="buffer">contains the result of the JavaScript</param>
+        /// <param name="timeout">maximum waiting time in seconds</param>
         /// <returns><c>true</c> if JavaScript executed without errors; otherwise <c>false</c>.<br/>
         /// If <c>false</c>, <paramref name="buffer"/> contains the error
         /// </returns>
         /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
-        public bool InvokeJavaScript(string js, ref byte[] buffer)
+        public bool InvokeJavaScript(string js, ref byte[] buffer, uint timeout)
+        {
+            return InvokeJavaScript(js, ref buffer, new UIntPtr(timeout));
+        }
+
+        /// <param name="js">the JavaScript to be run</param>
+        /// <param name="buffer">contains the result of the JavaScript</param>
+        /// <param name="timeout">
+        /// maximum waiting time represented as <see cref="TimeSpan"/><br/>
+        /// any unit smaller than seconds will be ignored
+        /// </param>
+        /// <inheritdoc cref="InvokeJavaScript(string, ref byte[], uint)"/>
+        public bool InvokeJavaScript(string js, ref byte[] buffer, TimeSpan timeout)
+        {
+            return InvokeJavaScript(js, ref buffer, new UIntPtr((uint)timeout.TotalSeconds));
+        }
+
+        private bool InvokeJavaScript(string js, ref byte[] buffer, UIntPtr timeout)
         {
             ThrowIfDisposedOrInvalid();
-            return Natives.WebUIRun(_handle, js, ref buffer, new UIntPtr((uint)buffer.Length));
+            return Natives.WebUIRun(_handle, js, timeout, ref buffer, new UIntPtr((uint)buffer.Length));
         }
 
         /// <summary>
@@ -807,7 +825,7 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_script")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static partial bool WebUIRun(WindowHandle windowHandle, string javaScript,
+            public static partial bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
                 [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_runtime")]
@@ -986,7 +1004,7 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_script")]
             [return: MarshalAs(UnmanagedType.I1)]
-            public static extern bool WebUIRun(WindowHandle windowHandle, string javaScript,
+            public static extern bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
                 [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
