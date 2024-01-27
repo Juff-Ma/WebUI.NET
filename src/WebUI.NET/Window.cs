@@ -443,7 +443,7 @@ namespace WebUI
         /// <inheritdoc cref="InvokeJavaScript(string, ref byte[], uint)"/>
         public bool InvokeJavaScript(string js, ref byte[] buffer, TimeSpan timeout)
         {
-            return InvokeJavaScript(js, ref buffer, new UIntPtr((uint)timeout.TotalSeconds));
+            return InvokeJavaScript(js, ref buffer, (uint)timeout.TotalSeconds);
         }
 
         private bool InvokeJavaScript(string js, ref byte[] buffer, UIntPtr timeout)

@@ -1,4 +1,5 @@
-﻿using WebUI;
+﻿using System.Text;
+using WebUI;
 
 Window window = new();
 ulong handlerid = 0;
@@ -7,10 +8,18 @@ handlerid = window.RegisterEventHandler((@event, _, id) =>
     if (handlerid == id)
     {
         var window = @event.Window;
-        window.InvokeJavaScript("""
+        byte[] buffer = new byte[1024];
+
+        window.InvokeJavaScript($"""
+            return "with handler id: " + {handlerid}
+            """, ref buffer, 0);
+
+        string result = Encoding.UTF8.GetString(buffer);
+
+        window.InvokeJavaScript($"""
             var button = document.getElementById("replace");
             var text = document.createElement("p");
-            text.innerHTML = "Successfully replaced!";
+            text.innerHTML = "Successfully replaced {result}!";
             button.parentNode.replaceChild(text, button);
             """);
     }
