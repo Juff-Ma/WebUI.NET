@@ -14,6 +14,9 @@ namespace WebUI
         /// <summary>
         /// Open no Browser window
         /// </summary>
+        /// <remarks>
+        /// This is useful for testing or if you want to build a semi-network application
+        /// </remarks>
         NoBrowser = 0,
         /// <summary>
         /// Open the browser recommended by WebUI
@@ -34,6 +37,9 @@ namespace WebUI
         /// <summary>
         /// Open a Safari window
         /// </summary>
+        /// <remarks>
+        /// currently only works in a normal browser window and not app mode and is therefore not really recommended
+        /// </remarks>
         Safari = 5,
         /// <summary>
         /// Open a Chromium window
@@ -42,6 +48,11 @@ namespace WebUI
         /// <summary>
         /// Opera browser, currently not implemented
         /// </summary>
+        /// <remarks>
+        /// Will still open as fall-back in a normal Window if no other browser is available (like every unsupported browser),
+        /// this however is buggy and not recommended. <br/>
+        /// However, this option will still not work, user should use <see cref="AnyBrowser"/> instead
+        /// </remarks>
         Opera = 7,
         /// <summary>
         /// Open a Brave window

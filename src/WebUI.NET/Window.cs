@@ -4,7 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-//TODO: implement
+// Ignore Spelling: Fullscreen svg
 
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 #nullable enable
@@ -24,7 +24,10 @@ using WebUI.Events;
 
 namespace WebUI
 {
-#if NET7_0_OR_GREATER   
+    /// <summary>
+    /// Class representing a WebUI (browser) Window
+    /// </summary>
+#if NET7_0_OR_GREATER
     public partial class Window : IDisposable
     {
 #else
@@ -62,12 +65,20 @@ namespace WebUI
         /// <exception cref="System.InvalidOperationException">Window handle is invalid.</exception>
         private void ThrowIfDisposedOrInvalid()
         {
+            // I hate this, but VS won't shut up
+#if NET7_0_OR_GREATER
+            ObjectDisposedException.ThrowIf(_disposed, nameof(Window));
+#else
             if (_disposed)
                 throw new ObjectDisposedException(nameof(Window));
+#endif
             if (_handle.IsInvalid)
                 throw new InvalidOperationException("Window handle is invalid.");
         }
 
+        /// <summary>
+        /// A save wrapper for the native window handle, makes sure it won't leak memory if used correctly
+        /// </summary>
         internal sealed class WindowHandle : SafeHandle
         {
             public WindowHandle(IntPtr handle, bool isOwner) : base(IntPtr.Zero, isOwner)
@@ -88,9 +99,19 @@ namespace WebUI
 
         private readonly WindowHandle _handle;
 
+        /// <summary>
+        /// List of event callbacks, used for keeping the Garbage collector happy
+        /// </summary>
+        // why VS? Why? don't you get it that i have to do this in order to support stuff older than .NET5
+#if NET5_0_OR_GREATER
+        private readonly List<EventCallback> _callbacks = new();
+#else
         private readonly List<EventCallback> _callbacks = new List<EventCallback>();
+#endif
 
-
+        /// <summary>
+        /// file handler storing the dynamic content handler,  used for keeping the Garbage collector happy
+        /// </summary>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         private FileHandler? _fileHandler = null;
 #else
@@ -102,30 +123,51 @@ namespace WebUI
             _handle = new WindowHandle(windowHandle, isMainInstance);
         }
 
+        /// <summary>
+        /// Creates a new Window instance
+        /// </summary>
         public Window() : this(Natives.WebUINewWindow()) { }
 
+        /// <summary>
+        /// Creates a new Window instance with the specified window id
+        /// </summary>
+        /// <param name="windowId">the window id to be used</param>
         public Window(int windowId) : this(Natives.WebUINewWindow(new IntPtr(windowId))) { }
 
+        /// <summary>
+        /// Creates a new Window instance with the specified <see cref="WindowProperties"/>
+        /// </summary>
+        /// <param name="properties">properties to be applied to the Window</param>
         public Window(WindowProperties properties) : this()
         {
             this.ApplyWindowProperties(properties);
         }
 
+        /// <summary>
+        /// Creates a new Window instance with the specified <see cref="WindowProperties"/> and window id
+        /// </summary>
+        /// <inheritdoc cref="Window(WindowProperties)"/>
+        /// <inheritdoc cref="Window(int)"/>
         public Window(int windowId, WindowProperties properties) : this(windowId)
         {
             this.ApplyWindowProperties(properties);
         }
 
+        /// <summary>
+        /// Gets an existing Window by its id
+        /// </summary>
+        /// <param name="id">the id to be searched for</param>
+        /// <returns>the <see cref="Window"/> if found otherwise <c>null</c></returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static Window? GetWindowById(int id)
         {
 #else
-        public static Window FromWindowId(int id)
+        public static Window GetWindowById(int id)
         {
 #endif
-            //Return null if the window doesn't exist
             var handle = Natives.WebUICheckValidWindow(new IntPtr(id));
 
+            //Return null if the window doesn't exist
             if (!IsHandleValid(handle))
             {
                 return null;
@@ -140,42 +182,88 @@ namespace WebUI
         /// </summary>
         ~Window() => Dispose(false);
 
+        /// <summary>
+        /// Sets if the window should be full screen
+        /// </summary>
+        /// <param name="value"><c>true</c> if should be fullscreen; otherwise <c>false</c></param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetFullscreen(bool value)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetKiosk(_handle, value);
         }
 
+        /// <summary>
+        /// Sets if the window should be hidden <br/>
+        /// Should be called before <see cref="Show(string)"/>
+        /// </summary>
+        /// <param name="value"><c>true</c> if should be hidden; otherwise <c>false</c></param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetHidden(bool value)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetHidden(_handle, value);
         }
 
+        /// <summary>
+        /// Sets the <paramref name="width"/> and <paramref name="height"/> of the Window
+        /// </summary>
+        /// <param name="width">the windows width</param>
+        /// <param name="height">the windows height</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetSize(uint width, uint height)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetSize(_handle, width, height);
         }
 
+        /// <summary>
+        /// Sets the Windows <paramref name="x"/> and <paramref name="y"/> position
+        /// </summary>
+        /// <param name="x">the windows X position</param>
+        /// <param name="y">the windows Y position</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetPosition(uint x, uint y)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetPosition(_handle, x, y);
         }
 
-        public void SetPort(uint port)
+        /// <summary>
+        /// Sets the <paramref name="port"/> of WebUI should use
+        /// </summary>
+        /// <remarks>
+        /// This is useful for building semi web-applications or using and external web-server for WebUI (determining the port of webui.js)
+        /// </remarks>
+        /// <param name="port">the port to be set</param>
+        /// <returns><c>true</c> if port is available and usable by WebUI; otherwise <c>false</c></returns>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
+        public bool SetPort(uint port)
         {
             ThrowIfDisposedOrInvalid();
-            Natives.WebUISetPort(_handle, new UIntPtr(port));
+            return Natives.WebUISetPort(_handle, new UIntPtr(port));
         }
 
+        /// <summary>
+        /// Sets a SVG icon for WebUI to use as Window icon
+        /// </summary>
+        /// <param name="svgString">the SVG in text/xml format</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetIcon(string svgString)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetIcon(_handle, svgString, "image/svg+xml");
         }
 
+        /// <summary>
+        /// Sets a <see cref="Icon"/> for WebUI to use as Window icon
+        /// </summary>
+        /// <remarks>
+        /// Icons other than SVG are not recommended and should be used with caution. <br/>
+        /// If you need to use another icon format consider serving it over dynamic file handlers or directly from the root directory
+        /// </remarks>
+        /// <param name="icon">the icon to be set</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetIcon(Icon icon)
         {
             ThrowIfDisposedOrInvalid();
@@ -188,6 +276,10 @@ namespace WebUI
             Natives.WebUISetIcon(_handle, icon.Data, Icon.IconTypeToMimeType(icon.Type));
         }
 
+        /// <summary>
+        /// Gets if the window is shown
+        /// </summary>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public bool IsShown
         {
             get
@@ -197,6 +289,10 @@ namespace WebUI
             }
         }
 
+        /// <summary>
+        /// Gets the current URL of the browser Window or Navigates to it if getting set
+        /// </summary>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public string CurrentUrl
         {
             get
@@ -210,40 +306,74 @@ namespace WebUI
             }
         }
 
+        /// <summary>
+        /// Navigates to the specified <paramref name="url"/><br/>
+        /// Requires full HTTP/HTTPS url
+        /// </summary>
+        /// <param name="url">the url to be navigated to</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void Navigate(string url)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUINavigate(_handle, url);
         }
 
+        /// <summary>
+        /// Gets a window id to be used in conjunction with <see cref="Window(int)"/> or <see cref="GetWindowById(int)"/>
+        /// </summary>
+        /// <returns>an available window id not yet associated to any <see cref="Window"/></returns>
         public static int GetNewWindowId()
         {
             return Natives.WebUIGetNewWindowId().ToInt32();
         }
 
+        /// <summary>
+        /// Opens the Window with the specified <paramref name="content"/>
+        /// </summary>
+        /// <remarks>
+        /// Raw HTML should be enclosed in <![CDATA[ <html></html> ]]> tags. All content should include a reference to webui.js
+        /// </remarks>
+        /// <param name="content">the content as raw HTML or URL</param>
+        /// <returns><c>true</c> if Window opened successfully; otherwise <c>false</c></returns>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public bool Show(string content)
         {
             ThrowIfDisposedOrInvalid();
             return Natives.WebUIShow(_handle, content);
         }
 
+        /// <param name="content">the content as raw HTML or URL</param>
+        /// <param name="browser">the <see cref="Browser"/> to be opened</param>
+        /// <inheritdoc cref="Show(string)"/>
         public bool Show(string content, Browser browser)
         {
             ThrowIfDisposedOrInvalid();
             return Natives.WebUIShow(_handle, content, browser);
         }
 
+        /// <summary>
+        /// Closes the Window
+        /// </summary>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void Close()
         {
+            ThrowIfDisposedOrInvalid();
             Natives.WebUIClose(_handle);
         }
 
+        /// <summary>
+        /// Disposes the native Window handle
+        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// Disposes the native Window handle and runs the keep-alive code for event callbacks
+        /// </summary>
+        /// <param name="disposing">set to <c>false</c> if the Window handle shouldn't be disposed</param>
         protected virtual void Dispose(bool disposing)
         {
             if (_disposed)
@@ -278,29 +408,66 @@ namespace WebUI
             _disposed = true;
         }
 
+        /// <summary>
+        /// Fire and forget JavaScript invocation
+        /// </summary>
+        /// <param name="js">the JavaScript to be run</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void InvokeJavaScript(string js)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUIRun(_handle, js);
         }
 
+        /// <summary>
+        /// Runs JavaScript and stores the result in <paramref name="buffer"/>
+        /// </summary>
+        /// <param name="js">the JavaScript to be run</param>
+        /// <param name="buffer">contains the result of the JavaScript</param>
+        /// <returns><c>true</c> if JavaScript executed without errors; otherwise <c>false</c>.<br/>
+        /// If <c>false</c>, <paramref name="buffer"/> contains the error
+        /// </returns>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public bool InvokeJavaScript(string js, ref byte[] buffer)
         {
             ThrowIfDisposedOrInvalid();
             return Natives.WebUIRun(_handle, js, ref buffer, new UIntPtr((uint)buffer.Length));
         }
 
+        /// <summary>
+        /// Invokes a JavaScript function with the specified argument <paramref name="data"/>
+        /// </summary>
+        /// <param name="function">the name of the function to be invoked</param>
+        /// <param name="data">the raw binary data to be used as argument for the function</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void InvokeJavaScript(string function, byte[] data)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISendRaw(_handle, function, data, new UIntPtr((uint)data.Length));
         }
 
+        /// <summary>
+        /// Registers the specified <see cref="IEventHandler"/> as event handler
+        /// </summary>
+        /// <param name="eventHandler">the event handler</param>
+        /// <returns>the unique handler id.</returns>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public ulong RegisterEventHandler(IEventHandler eventHandler) => RegisterEventHandler(eventHandler, string.Empty);
 
+        /// <param name="eventHandler">the event handler</param>
+        /// <param name="element">the element the <paramref name="eventHandler"/> should be registered for</param>
+        /// <remarks>
+        /// The event handler will only receive events that are related to the specified <paramref name="element"/>,
+        /// notably <see cref="EventType.Click"/>
+        /// </remarks>
+        /// <inheritdoc cref="RegisterEventHandler(IEventHandler)"/>
         public ulong RegisterEventHandler(IEventHandler eventHandler, string element)
             => RegisterEventHandler(eventHandler.HandleEvent, element);
 
+        /// <summary>
+        /// Registers the specified callback as event handler
+        /// </summary>
+        /// <inheritdoc cref="RegisterEventHandler(IEventHandler)"/>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public ulong RegisterEventHandler(Func<Event, string, ulong, object?> eventHandler)
 #else
@@ -308,6 +475,10 @@ namespace WebUI
 #endif
         => RegisterEventHandler(eventHandler, string.Empty);
 
+        /// <summary>
+        /// Registers the specified callback as event handler
+        /// </summary>
+        /// <inheritdoc cref="RegisterEventHandler(IEventHandler, string)"/>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public ulong RegisterEventHandler(Func<Event, string, ulong, object?> eventHandler, string element)
 #else
@@ -315,7 +486,7 @@ namespace WebUI
 #endif
         {
             ThrowIfDisposedOrInvalid();
-
+#pragma warning disable IDE0039 // No i will not use a local function
             EventCallback callback = (IntPtr windowHandle,
                 UIntPtr eventType,
                 string elementName,
@@ -337,7 +508,6 @@ namespace WebUI
                 {
                     @event.ReturnValue(value.ToString());
                 }
-
             };
 
             _callbacks.Add(callback);
@@ -345,8 +515,17 @@ namespace WebUI
             return Natives.WebUIBind(_handle, element, callback).ToUInt64();
         }
 
+        /// <summary>
+        /// Sets the specified <see cref="IFileHandler"/> as the handler for dynamically loading files
+        /// </summary>
+        /// <param name="fileHandler">the dynamic file handler to be registered</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetFileHandler(IFileHandler fileHandler) => SetFileHandler(fileHandler.GetFile);
 
+        /// <summary>
+        /// Sets the specified callback as the handler for dynamically loading files
+        /// </summary>
+        /// <inheritdoc cref="SetFileHandler(IFileHandler)"/>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public void SetFileHandler(Func<string, byte[]?> fileHandler)
 #else
@@ -378,7 +557,15 @@ namespace WebUI
 
             Natives.WebUISetFileHandler(_handle, callback);
         }
+#pragma warning restore IDE0039
 
+        /// <summary>
+        /// Sets the root folder for this Window <br/>
+        /// needs to be called before any <see cref="Window.Show(string)"/>
+        /// </summary>
+        /// <param name="folder">the root folder that WebUI should server files from for this Window</param>
+        /// <exception cref="DirectoryNotFoundException">The specified folder does not exist or is invalid in another way</exception>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetRootFolder(string folder)
         {
             ThrowIfDisposedOrInvalid();
@@ -388,48 +575,91 @@ namespace WebUI
             }
         }
 
+        /// <param name="folder">
+        /// the root folder that WebUI should server files from for this Window
+        /// represented as <see cref="DirectoryInfo"/>
+        /// </param>
+        /// <inheritdoc cref="SetRootFolder(string)"/>
         public void SetRootFolder(DirectoryInfo folder)
         {
             SetRootFolder(folder.FullName);
         }
 
+        /// <param name="name">the name of the browser profile</param>
+        /// <param name="path">the path to the browser profile</param>
+        /// <remarks>
+        /// The Browser stores the user data and state of the browser in the profile directory. <br/>
+        /// If both <paramref name="name"/> and <paramref name="path"/> are empty, the default profile is used.
+        /// </remarks>
+        /// <inheritdoc cref="SetBrowserProfile(BrowserProfile)"/>
         public void SetBrowserProfile(string name, string path)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetProfile(_handle, name, path);
         }
 
+        /// <summary>
+        /// Sets the browser profile for this Window <br/>
+        /// needs to be called before any <see cref="Window.Show(string)"/>
+        /// </summary>
+        /// <remarks>
+        /// The Browser stores the user data and state of the browser in the profile directory.
+        /// </remarks>
+        /// <param name="profile">the Browser profile to be used</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetBrowserProfile(BrowserProfile profile)
         {
             SetBrowserProfile(profile.Name, profile.Path);
         }
 
+        /// <summary>
+        /// Deletes the browser profile for this Window <br/>
+        /// </summary>
         public void DeleteBrowserProfile()
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUIDeleteProfile(_handle);
         }
 
+        /// <summary>
+        /// Sets the proxy to be used for this Window
+        /// </summary>
+        /// <param name="proxy">the proxy</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetProxyServer(string proxy)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetProxy(_handle, proxy);
         }
 
+        /// <summary>
+        /// Sets WebUI's JavaScript runtime
+        /// </summary>
+        /// <param name="runtime">The JavaScript runtime to use</param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public void SetJavaScriptRuntime(Runtime runtime)
         {
             ThrowIfDisposedOrInvalid();
             Natives.WebUISetRuntime(_handle, runtime);
         }
 
+        /// <summary>
+        /// Gets the browsers main process
+        /// </summary>
+        /// <returns>the main process of the browser as <see cref="Process"/></returns>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public Process GetBrowserMainProcess()
         {
             ThrowIfDisposedOrInvalid();
             int processId = Convert.ToInt32(Natives.WebUIGetParentProcessId(_handle).ToUInt64());
             return Process.GetProcessById(processId);
-
         }
 
+        /// <summary>
+        /// Gets the last child process of the browser
+        /// </summary>
+        /// <returns>the last child process of the browser as <see cref="Process"/></returns>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
         public Process GetBrowserChildProcess()
         {
             ThrowIfDisposedOrInvalid();
@@ -508,7 +738,7 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_icon")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial void WebUISetIcon(WindowHandle windowHandle,
-                [MarshalAs(UnmanagedType.LPArray)]in byte[] icon, string iconType);
+                [MarshalAs(UnmanagedType.LPArray)] in byte[] icon, string iconType);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_send_raw")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]

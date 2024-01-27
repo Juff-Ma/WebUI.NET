@@ -150,11 +150,12 @@ namespace WebUI
         }
 
         /// <summary>
-        /// Sets a certificate for WebUI to use for secure connections. Must be called before <see cref="Window.Show(string)"/> <br/>
-        /// <br/>
-        /// IMPORTANT: requires secure natives and will do nothing with normal natives.
-        /// if not called when using secure natives WebUI will generate a self signed certificate
+        /// Sets a certificate for WebUI to use for secure connections. Must be called before <see cref="Window.Show(string)"/>
         /// </summary>
+        /// <remarks>
+        /// requires secure natives and will do nothing with normal natives.
+        /// if not called when using secure natives WebUI will generate a self signed certificate
+        /// </remarks>
         /// <param name="certificatePem">File name or contents of the public key/certificate in PEM format</param>
         /// <param name="privateKeyPem">File name or contents of the private key in unencrypted PEM format</param>
         /// <param name="loadFromFile">Set to <c>true</c> if contents should be loaded from file (default)

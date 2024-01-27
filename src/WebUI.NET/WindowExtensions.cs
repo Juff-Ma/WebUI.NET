@@ -22,6 +22,7 @@ namespace WebUI
         /// </summary>
         /// <param name="window">The window to which the properties should be applied</param>
         /// <param name="properties">the <see cref="WindowProperties"/> to be applied</param>
+        /// <inheritdoc cref="Window.ThrowIfDisposedOrInvalid"/>
         public static void ApplyWindowProperties(this Window window, WindowProperties properties)
         {
             window.SetFullscreen(properties.Fullscreen);
@@ -68,6 +69,7 @@ namespace WebUI
         /// </summary>
         /// <param name="window">The window that the <see cref="DefaultEventHandler"/> should be registered for</param>
         /// <returns>the registered <see cref="DefaultEventHandler"/></returns>
+        /// <inheritdoc cref="Window.RegisterEventHandler(IEventHandler)"/>
         public static DefaultEventHandler RegisterDefaultEventHandler(this Window window)
         {
             var handler = new DefaultEventHandler();
