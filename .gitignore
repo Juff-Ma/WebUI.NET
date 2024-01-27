@@ -5,7 +5,6 @@
 # .NET Core build folders
 bin/
 obj/
-nupkg/
 
 # Common node modules locations
 /node_modules
