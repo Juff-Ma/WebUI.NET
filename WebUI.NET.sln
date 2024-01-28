@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "js_interop", "examples\js_i
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "js_call", "examples\js_call\js_call.csproj", "{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "invoke_backend_function", "examples\invoke_backend_function\invoke_backend_function.csproj", "{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,10 @@ Global
 		{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{473FADD0-6CEF-4832-9ABC-8370A8539292} = {A18A8D0B-6550-4C02-80D8-4D8DCC8A4C26}
@@ -80,5 +86,6 @@ Global
 		{A1B64637-4976-41AA-8F56-1D7E58DED082} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 		{6543E52E-FB68-4754-848A-24E9927CC258} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 		{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B} = {646E5093-39B6-4C21-8EEE-1488488F2366}
+		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 	EndGlobalSection
 EndGlobal

@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <script src="webui.js"></script>
+    <title>JS Call</title>
+    <script>
+        function onPrintButton() {
+            backendPrint(document.getElementById("input").value)
+            // alternatively webui.backendPrint(document.getElementById("input").value)
+            // or webui.call("backendPrint", document.getElementById("input").value)
+        }
+
+        function onGetRandomNumber() {
+            // webui will *not* return a specific type
+            randomNumber().then((number) => {
+                alert(number);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <input type="text" id="input" />
+        <button onclick="onPrintButton()">print in console</button>
+    </div>
+    <div>
+        <button onclick="onGetRandomNumber()">Get random number</button>
+    </div>
+</body>
+</html>
