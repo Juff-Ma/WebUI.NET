@@ -24,7 +24,7 @@
 		<PackageTags>webui;ui;gui;browser;webbrowser</PackageTags>
 		<AssemblyVersion>2.4.0.0</AssemblyVersion>
 		<VersionPrefix>2.4.2.0</VersionPrefix>
-		<VersionSuffix>-beta.10</VersionSuffix>
+		<VersionSuffix>-beta.11</VersionSuffix>
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>

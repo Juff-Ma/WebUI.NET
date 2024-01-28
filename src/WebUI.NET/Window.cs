@@ -19,7 +19,6 @@ using System.IO;
 using System.Runtime.CompilerServices;
 #endif
 using System.Runtime.InteropServices;
-
 using WebUI.Events;
 
 namespace WebUI
@@ -765,7 +764,27 @@ namespace WebUI
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_send_raw")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial void WebUISendRaw(WindowHandle windowHandle, string function,
-                [MarshalAs(UnmanagedType.LPArray)] in byte[] data, UIntPtr length);
+                IntPtr data, UIntPtr length);
+
+            public static void WebUISendRaw(WindowHandle windowHandle, string function,
+                in byte[] dataPointer, UIntPtr length)
+            {
+                IntPtr buffer = Utils.Malloc(length);
+                try
+                {
+                    Marshal.Copy(dataPointer, 0, buffer, (int)length);
+
+                    WebUISendRaw(windowHandle, function, buffer, length);
+                }
+                catch
+                {
+                    // If an exception throws it will most likely be from Marshal.Copy and there will be nothing to handle
+                }
+                finally
+                {
+                    Utils.Free(buffer);
+                }
+            }
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_hide")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -842,14 +861,16 @@ namespace WebUI
                     var result = WebUIRun(windowHandle, javaScript, timeout, buffer, length);
 
                     Marshal.Copy(buffer, dataPointer, 0, (int)length);
-                    Utils.Free(buffer);
 
                     return result;
                 }
                 catch
                 {
-                    Utils.Free(buffer);
                     return false;
+                }
+                finally
+                {
+                    Utils.Free(buffer);
                 }
             }
 
