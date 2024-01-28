@@ -830,7 +830,28 @@ namespace WebUI
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
             public static partial bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
-                [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] ref byte[] data, UIntPtr length);
+                IntPtr dataPointer, UIntPtr length);
+
+            // LibraryImportAttribute seems to  not work with this kind of buffer, so i just allocate it manually
+            public static bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
+                ref byte[] dataPointer, UIntPtr length)
+            {
+                IntPtr buffer = Utils.Malloc(length);
+                try
+                {
+                    var result = WebUIRun(windowHandle, javaScript, timeout, buffer, length);
+
+                    Marshal.Copy(buffer, dataPointer, 0, (int)length);
+                    Utils.Free(buffer);
+
+                    return result;
+                }
+                catch
+                {
+                    Utils.Free(buffer);
+                    return false;
+                }
+            }
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_runtime")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]

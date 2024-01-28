@@ -12,11 +12,9 @@ handlerid = window.RegisterEventHandler((@event, _, id) =>
 
         window.InvokeJavaScript($"return \"with handler id: \" + {handlerid}", ref buffer, 10);
 
-        string result = Encoding.UTF8.GetString(buffer);
-
         // remove null bytes from string, Encoding.UTF8.GetString() does not remove the null bytes
         // C *will* interpret them as string end and inevitable fuck with the system
-        result = result.Replace("\0", string.Empty);
+        string result = Encoding.UTF8.GetString(buffer).TrimEnd('\0');
 
         window.InvokeJavaScript(
             "var button = document.getElementById(\"replace\");\n" +
