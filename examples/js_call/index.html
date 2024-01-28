@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <script src="webui.js"></script>
+    <title>JS Call</title>
+    <script>
+        // array/value from WebUI is always a Uint8Array
+        function setText(array) {
+            // WebUI will insert a zero byte between its and our data so we split the array at the first zero byte we encounter
+            var zeroByte = array.indexOf(0x00);
+            var subArray = array.slice(zeroByte);
+            document.getElementById("text").innerHTML = new TextDecoder().decode(subArray);
+        }
+    </script>
+</head>
+<body>
+    <p id="text"></p>
+</body>
+</html>
