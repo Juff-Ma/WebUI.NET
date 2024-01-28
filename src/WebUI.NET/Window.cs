@@ -830,7 +830,7 @@ namespace WebUI
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
             public static partial bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
-                [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
+                [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 4)] ref byte[] data, UIntPtr length);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_runtime")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]

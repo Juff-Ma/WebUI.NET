@@ -8,17 +8,21 @@ handlerid = window.RegisterEventHandler((@event, _, id) =>
     if (handlerid == id)
     {
         var window = @event.Window;
-        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[255];
 
         window.InvokeJavaScript($"return \"with handler id: \" + {handlerid}", ref buffer, 10);
 
         string result = Encoding.UTF8.GetString(buffer);
 
+        // remove null bytes from string, Encoding.UTF8.GetString() does not remove the null bytes
+        // C *will* interpret them as string end and inevitable fuck with the system
+        result = result.Replace("\0", string.Empty);
+
         window.InvokeJavaScript(
-            "var button = document.getElementById(\"replace\");" +
-            "var text = document.createElement(\"p\");" +
-            $"text.innerHTML = \"Successfully replaced {result}!\";" +
-            "button.parentNode.replaceChild(text, button);");
+            "var button = document.getElementById(\"replace\");\n" +
+            "var text = document.createElement(\"p\");\n" +
+            $"text.innerHTML = \"Successfully replaced {result}!\";\n" +
+            "button.parentNode.replaceChild(text, button);\n");
     }
     return null;
 }, "replace");
