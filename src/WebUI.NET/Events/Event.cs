@@ -112,18 +112,35 @@ namespace WebUI.Events
         }
 
         /// <summary>
-        /// Gets the size of an argument from the event
+        /// Gets the raw data of an argument from the event
         /// </summary>
-        /// <returns>the size in bytes</returns>
+        /// <returns>the data as <see cref="byte"/> array</returns>
         /// <inheritdoc cref="ThrowOnInvalidHandle"/>
-        public ulong GetSize() => GetSize(0U);
+        public byte[] GetRaw() => GetRaw(0U);
 
-        /// <inheritdoc cref="GetSize()"/>
+        /// <inheritdoc cref="GetRaw()"/>
         /// <param name="index">The index of the argument</param>
-        public ulong GetSize(uint index)
+        public byte[] GetRaw(uint index)
         {
             ThrowOnInvalidHandle();
-            return Natives.WebUIGetSize(_windowId, _eventId, new UIntPtr(index)).ToUInt64();
+
+            var uindex = new UIntPtr(index);
+            ulong size = Natives.WebUIGetSize(_windowId, _eventId, uindex).ToUInt64();
+
+            byte[] buffer = new byte[size];
+            var ptr = Natives.WebUIGetRaw(_windowId, _eventId, uindex);
+
+            try
+            {
+                Marshal.Copy(ptr, buffer, 0, (int)size);
+            }
+            catch
+            {
+                // if this happens size is probably to big for an Int32
+                // so we just return an empty buffer
+            }
+
+            return buffer;
         }
 
         internal void ReturnValue(string value)
@@ -143,6 +160,10 @@ namespace WebUI.Events
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_string_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial string WebUIGetString(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
+
+            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_string_at")]
+            [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+            public static partial IntPtr WebUIGetRaw(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
             [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_bool_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -170,6 +191,11 @@ namespace WebUI.Events
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_interface_get_string_at")]
             public static extern string WebUIGetString(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
+
+            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+                ThrowOnUnmappableChar = false, BestFitMapping = false,
+                EntryPoint = "webui_interface_get_string_at")]
+            public static extern IntPtr WebUIGetRaw(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
