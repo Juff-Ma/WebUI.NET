@@ -11,6 +11,7 @@
 #endif
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -767,14 +768,18 @@ namespace WebUI
                 IntPtr data, UIntPtr length);
 
             public static void WebUISendRaw(WindowHandle windowHandle, string function,
-                in byte[] dataPointer, UIntPtr length)
+                in byte[] data, UIntPtr length)
             {
-                IntPtr buffer = Utils.Malloc(length);
+                GCHandle? pinnedDataPointer = null;
                 try
                 {
-                    Marshal.Copy(dataPointer, 0, buffer, (int)length);
+                    pinnedDataPointer = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-                    WebUISendRaw(windowHandle, function, buffer, length);
+                    // hack, but works
+                    if (pinnedDataPointer is { } notNullPointer)
+                    {
+                        WebUISendRaw(windowHandle, function, notNullPointer.AddrOfPinnedObject(), length);
+                    }
                 }
                 catch
                 {
@@ -782,7 +787,7 @@ namespace WebUI
                 }
                 finally
                 {
-                    Utils.Free(buffer);
+                    pinnedDataPointer?.Free();
                 }
             }
 
