@@ -449,7 +449,11 @@ namespace WebUI
         private bool InvokeJavaScript(string js, ref byte[] buffer, UIntPtr timeout)
         {
             ThrowIfDisposedOrInvalid();
+#if NET7_0_OR_GREATER
             return Natives.WebUIRun(_handle, js, timeout, ref buffer, new UIntPtr((uint)buffer.Length));
+#else
+            return Natives.WebUIRun(_handle, js, timeout, buffer, new UIntPtr((uint)buffer.Length));
+#endif
         }
 
         /// <summary>
@@ -1005,7 +1009,7 @@ namespace WebUI
                 EntryPoint = "webui_script")]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
-                [MarshalAs(UnmanagedType.LPArray)] ref byte[] data, UIntPtr length);
+                [MarshalAs(UnmanagedType.LPArray), Out] byte[] data, UIntPtr length);
 
             [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
