@@ -1,0 +1,44 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Include="ui\**">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<Choose>
+		<When Condition="'$(Configuration)' == 'Debug'">
+			<ItemGroup>
+				<PackageReference Include="WebUI.NET" Version="*-*" />
+				<PackageReference Include="WebUI.NET.Natives" Version="*-*" />
+			</ItemGroup>
+			<PropertyGroup>
+				<OutputType>Exe</OutputType>
+				<RestoreAdditionalProjectSources>
+					$(MSBuildThisFileDirectory)/../../nupkg/Debug/
+				</RestoreAdditionalProjectSources>
+			</PropertyGroup>
+		</When>
+	</Choose>
+	<Choose>
+		<When Condition="'$(Configuration)' == 'Release'">
+			<ItemGroup>
+				<PackageReference Include="WebUI.NET" Version="*-*" />
+				<PackageReference Include="WebUI.NET.Natives" Version="*-*" />
+			</ItemGroup>
+			<PropertyGroup>
+				<OutputType>WinExe</OutputType>
+				<RestoreAdditionalProjectSources>
+					$(MSBuildThisFileDirectory)/../../nupkg/Release/
+				</RestoreAdditionalProjectSources>
+			</PropertyGroup>
+		</When>
+	</Choose>
+</Project>
+

@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "js_call", "examples\js_call
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "invoke_backend_function", "examples\invoke_backend_function\invoke_backend_function.csproj", "{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "text_editor", "examples\text_editor\text_editor.csproj", "{047D6121-AF91-4428-8B92-C31A976E5642}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{047D6121-AF91-4428-8B92-C31A976E5642}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{047D6121-AF91-4428-8B92-C31A976E5642}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{047D6121-AF91-4428-8B92-C31A976E5642}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{047D6121-AF91-4428-8B92-C31A976E5642}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{473FADD0-6CEF-4832-9ABC-8370A8539292} = {A18A8D0B-6550-4C02-80D8-4D8DCC8A4C26}
@@ -87,5 +93,6 @@ Global
 		{6543E52E-FB68-4754-848A-24E9927CC258} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 		{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C} = {646E5093-39B6-4C21-8EEE-1488488F2366}
+		{047D6121-AF91-4428-8B92-C31A976E5642} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 	EndGlobalSection
 EndGlobal
