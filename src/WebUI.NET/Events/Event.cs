@@ -164,54 +164,54 @@ namespace WebUI.Events
 #if NET7_0_OR_GREATER
         private static partial class Natives
         {
-            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_int_at")]
+            [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_int_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I8)]
             public static partial long WebUIGetInt(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_string_at")]
+            [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_string_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial IntPtr WebUIGet(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_bool_at")]
+            [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_bool_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.U1)]
             public static partial bool WebUIGetBool(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_size_at")]
+            [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_size_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial UIntPtr WebUIGetSize(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [LibraryImport("webui-2", StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_set_response")]
+            [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_set_response")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial void WebUIReturn(IntPtr windowHandle, UIntPtr eventId, string content);
         }
 #else
         private static class Natives
         {
-            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+            [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_interface_get_int_at")]
             [return: MarshalAs(UnmanagedType.I8)]
             public static extern long WebUIGetInt(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+            [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_interface_get_string_at")]
             public static extern IntPtr WebUIGet(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+            [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_interface_get_bool_at")]
             [return: MarshalAs(UnmanagedType.U1)]
             public static extern bool WebUIGetBool(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+            [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_interface_get_size_at")]
             public static extern UIntPtr WebUIGetSize(IntPtr windowHandle, UIntPtr eventId, UIntPtr index);
 
-            [DllImport("webui-2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+            [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_interface_set_response")]
             public static extern void WebUIReturn(IntPtr windowHandle, UIntPtr eventId, string content);
