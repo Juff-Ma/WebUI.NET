@@ -12,6 +12,8 @@
 		<AllowUnsafeBlocks>True</AllowUnsafeBlocks>
 		<Nullable>disable</Nullable>
 		<WarningLevel>9999</WarningLevel>
+
+		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup>
 		<Title>WebUI.NET</Title>
@@ -24,7 +26,7 @@
 		<PackageTags>webui;ui;gui;browser;webbrowser</PackageTags>
 		<AssemblyVersion>2.4.0.0</AssemblyVersion>
 		<VersionPrefix>2.4.2.0</VersionPrefix>
-		<VersionSuffix>-beta.14</VersionSuffix>
+		<VersionSuffix>-beta.15</VersionSuffix>
 		<Version>$(VersionPrefix)$(VersionSuffix)</Version>
 		<FileVersion>$(VersionPrefix)</FileVersion>
 		<PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
