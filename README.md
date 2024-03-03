@@ -42,7 +42,7 @@ If you want to see whats possible here are screenshots of the text_editor exampl
 If you are not yet convinced or need more informations about WebUI take a look at it's [homepage](https://webui.me) or it's [repository](https://github.com/webui-dev/webui/)
 
 ## Contents
-- [Features](#features)
+- [Features](#webuinet)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Building](#building)
