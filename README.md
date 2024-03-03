@@ -30,9 +30,23 @@ This library contains high level bindings and precompiled binaries for the nativ
 - Multi-platform & Multi-Browser
 - Using private profile for safety
 
+### Screenshots
+If you want to see whats possible here are screenshots of the text_editor example (originally ported from the C version) on Windows, MacOS and Linux (Gnome)
+<p align="middle">
+  <img src="https://github.com/Juff-Ma/WebUI.NET/blob/main/assets/Windows-Screenshot.png" width="33%" />
+  <img src="https://github.com/Juff-Ma/WebUI.NET/blob/main/assets/MacOS-Screenshot.png" width="33%" /> 
+  <img src="https://github.com/Juff-Ma/WebUI.NET/blob/main/assets/Linux-Screenshot.png" width="33%" /> 
+</p>
+
 ### More Info
 If you are not yet convinced or need more informations about WebUI take a look at it's [homepage](https://webui.me) or it's [repository](https://github.com/webui-dev/webui/)
 
+## Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Building](#building)
+- [Licensing](#licensing)
 
 ## Installation
 You can install WebUI.NET using nuget by using the nuget explorer or the following command: 
@@ -72,6 +86,10 @@ window.Show("""
 Utils.WaitForExit();
 ```
 For more examples you can look at the [examples](https://github.com/Juff-Ma/WebUI.NET/tree/main/examples) directory.
+
+### Deployment Options
+If you finished writing your app and now want to ship it to your users you have multiple options, of course you can package the app in whatever way you want but here are some tested recommendations. 
+For Windows and Linux deployment take a look at [PupNet-Deploy](https://github.com/kuiperzone/PupNet-Deploy) and for MacOS you can write a little startup bash script and then use [Platypus](https://sveinbjorn.org/platypus) and [create-dmg](https://github.com/create-dmg/create-dmg) to build the package.
 
 ## Building
 You can build WebUI.NET itself like every other .NET project by using ```dotnet build```. When buildung the .nupkg and .snupkg are put into the repective configuration's directory inside the nupkgs toplevel directory.
