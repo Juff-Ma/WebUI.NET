@@ -101,7 +101,7 @@ In contrast the examples require the library and natives provided by _WebUI.NET_
 WebUI.NET is licensed under the [MPL-2.0](https://github.com/Juff-Ma/WebUI.NET/blob/main/LICENSE) license, more information about dos and don'ts can be found on the Mozilla MPL [FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/) but in short you can use this library in binary form in proprietary and open-source projects as long as you keep the copyright and tell people where to download the library. If you want to include the library in source code form you will need to keep every file that contains MPL code under the MPL. Notable exception are the LGPL2.1+ GPL2+ or AGPL3+ licenses that the MPL also allows you to use. **DISCLAIMER: I'm not a lawyer and this is not legal advice, if you want more specific info please read the FAQ and the license**<br/>
 The examples are NOT part of the main project and can be used under the [CC0](https://creativecommons.org/public-domain/cc0/) license for that matter as long as you respect the license of this library and the other libraries used by this project.
 
-WebUI is licensed under the [MIT](https://github.com/webui-dev/webui/blob/main/LICENSE) license.
+WebUI and its logo (on which the WebUI.NET logo is based) are licensed under the [MIT](https://github.com/webui-dev/webui/blob/main/LICENSE) license.
 
 All libraries used in this projects are under Copyright (C) of their respective owners. You can find more information on the copyright notice of the _WebUI.NET.Natives_ and _WebUI.NET.Natives.Secure_ nuget packages.
 
