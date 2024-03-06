@@ -277,6 +277,17 @@ namespace WebUI
         }
 
         /// <summary>
+        /// Allow the Window to be accessed from a public network
+        /// </summary>
+        /// <param name="value"><c>true</c> if window should be accessible from public network, otherwise <c>false</c></param>
+        /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
+        public void SetAllowPublicConnections(bool value)
+        {
+            ThrowIfDisposedOrInvalid();
+            Natives.WebUISetPublic(_handle, value);
+        }
+
+        /// <summary>
         /// Gets if the window is shown
         /// </summary>
         /// <inheritdoc cref="ThrowIfDisposedOrInvalid"/>
