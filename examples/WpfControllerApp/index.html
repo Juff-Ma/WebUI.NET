@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta charset="utf-8" />
+	<script src="webui.js"></script>
+	<title>JS Interop</title>
+	<script>
+
+		const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+		async function SampleAsync() {
+			const startTime = performance.now();
+			await delay(750);
+			return `Async Delayed for: ${performance.now() - startTime}ms`;
+		}
+		const getStrWArgs = (...args) => `You passed us: ${Array.from(args).join(", ")}`;
+
+		const getDouble = () => Math.random() * 1234;
+
+
+		const getStrArr = () => "My string array".split(" ");
+
+		const complexObj = { "id": 123, subObj: { name: "bob", val: "of course" }, subArr: ["lots", "of", 123.4] };
+		const getComplexObj = () => complexObj;
+
+		async function btn2Clicked() {
+			let res = await webui.call("MyTest_function", "an", "arg", 12345.78);
+			alert("You returned: " + res);
+		}
+
+		//generate();
+	</script>
+</head>
+<body>
+	<button id="TestButton">Javascript => C# Tests</button>
+	<button id="TestButton2" onclick="btn2Clicked()">Click ME2!</button>
+</body>
+</html>
