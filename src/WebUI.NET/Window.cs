@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
@@ -11,16 +11,25 @@
 #endif
 
 using System;
-using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+
 
 #if NET7_0_OR_GREATER
 using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 #endif
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading.Tasks;
+using CommunityToolkit.HighPerformance.Buffers;
 using WebUI.Events;
+using WebUI.Models;
 
 namespace WebUI
 {
@@ -122,7 +131,12 @@ namespace WebUI
         {
             _handle = new WindowHandle(windowHandle, isMainInstance);
         }
-
+        private class DefaultInvokeHelper : IInvokerHelper
+        {
+            public T InvokeWithReturnType<T>(Func<T> action) => action();
+            public void InvokeWithVoid(Action action) => action();
+        }
+        public static IInvokerHelper UseSpecificDispatcher;
         /// <summary>
         /// Creates a new Window instance
         /// </summary>
@@ -430,6 +444,171 @@ namespace WebUI
             Natives.WebUIRun(_handle, js);
         }
 
+
+        public class WindowConfig
+        {
+            public int ScriptEvaulationMaxReturnSize = 1024 * 1024 * 8;
+            public TimeSpan ScriptEvaluationDefaultTimeout = TimeSpan.FromSeconds(15);
+
+        }
+        public class JavaScriptException : Exception
+        {
+            public JavaScriptException() { }
+
+            public JavaScriptException(string? message) : base(message) { }
+
+            public JavaScriptException(string? message, Exception? innerException) : base(message, innerException) { }
+
+        }
+        public WindowConfig config = new();
+        /// <summary>
+        /// Note for non-valuetype (string, numbers,etc) return types it expects the value to have been returned from javascript in json form (ie JSON.stringify({'my':'obj'});  if you want something to stringify for you see ScriptEvaluateMethod.
+        /// </summary>
+        /// <param name="javascript"></param>
+        /// <param name="timeout">Note timeout has a resolution of 1 second</param>
+        /// <param name="stringReturnsAreSerialized">When true even strings will be run through the deserializer so they must be quoted when returned, when null(default) will try to auto detect and strip off first pair of quotes (if present) when false nothing will be done to the result just returned bare.</param>
+        /// <returns></returns>
+        public async Task<T?> ScriptEvaluate<T>(string javascript, TimeSpan? timeout = null, bool? stringReturnsAreSerialized = null)
+        {
+            var time = timeout ?? config.ScriptEvaluationDefaultTimeout;
+            var result = await BackgroundExecuteScript(javascript, time);
+            if (stringReturnsAreSerialized != true && typeof(T) == typeof(string))
+            {
+                if (stringReturnsAreSerialized != false && result is string s && s.Length > 2 && s.StartsWith("\"") && s.EndsWith("\"")) //try to autodetect when j
+                    return (T)(object)s.Substring(1, s.Length - 2);
+                return (T)(object)result;
+            }
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(result);
+        }
+
+        /// <summary>
+        /// Automatically serializes the result so can handle more types by default
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="javascriptMethod"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        public async Task<T?> ScriptEvaluateMethod<T>(string javascriptMethod, params object[] args)
+        {
+            return await ScriptEvaluate<T>($"return JSON.stringify({CEFSharpImports.GetScriptForJavascriptMethodWithArgs(javascriptMethod, args)});", stringReturnsAreSerialized: true);
+
+        }
+        
+        public void RegisterBoundFunction(LambdaExpression methodExpression, String OverrideRegisteredName = null, object OverrideInstance = null)
+        {
+            var info = ReflectionHelpers.GetMethodInfo(methodExpression, out var instance);
+            OverrideInstance ??= instance;
+            OverrideRegisteredName ??= info.Name;
+
+            if (!info.IsStatic && OverrideInstance == null)
+                throw new ArgumentException("Method is an instance method but are not able to automatically determine instance please use OverrideInstance arg");
+            var id = Natives.WebUIBind(_handle, OverrideRegisteredName, OurFuncCallback);
+            boundMethods[id] = new MethodBoundInfo { toCall = info, JSName = OverrideRegisteredName, instance = OverrideInstance, ReturnType = info.ReturnType };
+        }
+        /// <summary>
+        /// Takes a function that gets the name of the element clicked
+        /// </summary>
+        /// <param name="OnClick"></param>
+        public void RegisterOnClick(Action<string> OnClick, String domId)
+        {
+            var id = Natives.WebUIBind(_handle, domId, OurFuncCallback);
+            boundMethods[id] = new ClickBoundInfo { OnClick = OnClick };
+        }
+
+        private static void OurFuncCallback(nint windowHandle, nuint eventType, string element, nuint eventId, nuint bindId)
+        {
+            Debug.WriteLine("OurFuncCallback called");
+            if (boundMethods.TryGetValue(bindId, out var _boundItem))
+            {
+                if (_boundItem is ClickBoundInfo cb){
+                    UseSpecificDispatcher.InvokeWithVoid(() => cb.OnClick(element));
+                    return;
+                }
+                var info = _boundItem as MethodBoundInfo;
+                if (info.defaultCallArgs == null)
+                    (info.defaultCallArgs,info.callArgTypes) = ReflectionHelpers.GetArgsForMethod(info.toCall);
+
+                var args = (object[])info.defaultCallArgs.Clone();
+                for (var x = 0; x < info.defaultCallArgs.Length; x++)
+                {
+                    var ptr = Event.Natives.WebUIGet(windowHandle, eventId, (nuint)x); //we can get everything as strings and do the conversions ourselves, if an arg doesn't exist it just returns an empty string
+                    var str = Marshal.PtrToStringAnsi(ptr);
+                    var typ = info.callArgTypes[x];
+                    if (typ == typeof(string))
+                        args[x] = str;
+                    else if (!String.IsNullOrWhiteSpace(str))
+                    {
+                        if (typ == typeof(int) && int.TryParse(str, out var pi))
+                            args[x] = pi;
+                        else if (typ == typeof(double) && double.TryParse(str, out var pd))
+                            args[x] = pd;
+                        else if (typ == typeof(float) && float.TryParse(str, out var pf))
+                            args[x] = pf;
+                        else if (typ == typeof(decimal) && decimal.TryParse(str, out var pde))
+                            args[x] = pde;
+                        else if (typ == typeof(char))
+                            args[x] = str.FirstOrDefault();
+
+                    }
+
+                }
+                if (info.ReturnType != typeof(void))
+                {
+                    var callMethod = UseSpecificDispatcher.GetType().GetMethod("InvokeWithReturnType").MakeGenericMethod(typeof(object));//info.ReturnType);
+                    var result = callMethod.Invoke(UseSpecificDispatcher, new object[] { () => info.toCall.Invoke(info.instance, args) });
+                    if (result is Task T){
+                        T.Wait(); //ewww even though it returns a promise it doesnt have a deferral
+                        result = result.GetType().GetProperty("Result").GetValue(result);
+                    }
+                     Event.Natives.WebUIReturn(windowHandle, eventId, result.ToString());
+                } else
+                    UseSpecificDispatcher.InvokeWithVoid(() => info.toCall.Invoke(info.instance, args));
+            }
+        }
+        public interface IInvokerHelper
+        {
+            T InvokeWithReturnType<T>(Func<T> action);
+            void InvokeWithVoid(Action action);
+        }
+        private class MethodBoundInfo : IBoundInfo
+        {
+            public MethodInfo toCall;
+            public object instance;
+            public object[] defaultCallArgs;
+            public Type[] callArgTypes;
+            public string JSName;
+            public Type ReturnType;
+        }
+        private class ClickBoundInfo : IBoundInfo {
+            public Action<string> OnClick;
+        }
+        private interface IBoundInfo{ }
+        private static ConcurrentDictionary<nuint, IBoundInfo> boundMethods = new();
+
+        private unsafe Task<string> BackgroundExecuteScript(string javascript, TimeSpan timeout)
+        {
+            var it = Task.Run(() =>
+            {
+                using var buffer = MemoryOwner<byte>.Allocate(config.ScriptEvaulationMaxReturnSize); // this is a memory pool, I promise:)
+                var res = Script(javascript, (uint)Math.Round(timeout.TotalSeconds), buffer.Span);
+                fixed (byte* ptr = buffer.Span)
+                {
+                    var str = Encoding.UTF8.GetString(ptr, buffer.Span.IndexOf((byte)0));
+                    if (!res)
+                        throw new JavaScriptException(str);
+                    return str;
+                }
+            }
+            );
+            return it;
+        }
+
+        public unsafe bool Script(string javaScript, uint timeout_secs, Span<Byte> buffer)
+        {
+            fixed (byte* ptr = buffer)
+                return Natives.WebUIScript(_handle, javaScript, (UIntPtr)timeout_secs, ptr, (UIntPtr)buffer.Length);
+
+        }
         /// <summary>
         /// Runs JavaScript and stores the result in <paramref name="buffer"/>
         /// </summary>
@@ -791,12 +970,10 @@ namespace WebUI
                     {
                         WebUISendRaw(windowHandle, function, notNullPointer.AddrOfPinnedObject(), length);
                     }
-                }
-                catch
+                } catch
                 {
                     // If an exception throws it will most likely be from Marshal.Copy and there will be nothing to handle
-                }
-                finally
+                } finally
                 {
                     pinnedDataPointer?.Free();
                 }
@@ -862,6 +1039,11 @@ namespace WebUI
             public static partial void WebUIRun(WindowHandle windowHandle, string javaScript);
 
             [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_script")]
+            [return: MarshalAs(UnmanagedType.I1)]
+            public static unsafe partial bool WebUIScript(WindowHandle windowHandle, string javaScript, UIntPtr timeout, byte* data, UIntPtr length);
+
+
+            [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_script")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
             public static partial bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
@@ -879,12 +1061,10 @@ namespace WebUI
                     Marshal.Copy(buffer, dataPointer, 0, (int)length);
 
                     return result;
-                }
-                catch
+                } catch
                 {
                     return false;
-                }
-                finally
+                } finally
                 {
                     Utils.Free(buffer);
                 }
@@ -1068,6 +1248,10 @@ namespace WebUI
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool WebUIRun(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
                 [MarshalAs(UnmanagedType.LPArray), Out] byte[] data, UIntPtr length);
+
+            [return: MarshalAs(UnmanagedType.I1)]
+            public unsafe static extern bool WebUIScript(WindowHandle windowHandle, string javaScript, UIntPtr timeout,
+                byte* data, UIntPtr length);
 
             [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,

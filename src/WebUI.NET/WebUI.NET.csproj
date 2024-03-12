@@ -13,7 +13,7 @@
 		<Nullable>disable</Nullable>
 		<WarningLevel>9999</WarningLevel>
 		<RootNamespace>WebUI</RootNamespace>
-
+        <LangVersion>preview</LangVersion>
 		<IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))">true</IsAotCompatible>
 	</PropertyGroup>
 	<PropertyGroup>
@@ -59,7 +59,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.HighPerformance" Version="8.2.2" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
 </Project>
