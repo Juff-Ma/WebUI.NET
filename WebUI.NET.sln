@@ -1,42 +1,45 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A18A8D0B-6550-4C02-80D8-4D8DCC8A4C26}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI.NET", "src\WebUI.NET\WebUI.NET.csproj", "{473FADD0-6CEF-4832-9ABC-8370A8539292}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUI.NET", "src\WebUI.NET\WebUI.NET.csproj", "{473FADD0-6CEF-4832-9ABC-8370A8539292}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI.NET.Natives", "src\WebUI.NET.Natives\WebUI.NET.Natives.csproj", "{BE09800A-7B7D-44F4-A294-372BBD5C9B9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUI.NET.Natives", "src\WebUI.NET.Natives\WebUI.NET.Natives.csproj", "{BE09800A-7B7D-44F4-A294-372BBD5C9B9D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebUI.NET.Natives.Secure", "src\WebUI.NET.Natives.Secure\WebUI.NET.Natives.Secure.csproj", "{444F629E-4AFF-4454-A1B2-4F765810321C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebUI.NET.Natives.Secure", "src\WebUI.NET.Natives.Secure\WebUI.NET.Natives.Secure.csproj", "{444F629E-4AFF-4454-A1B2-4F765810321C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{646E5093-39B6-4C21-8EEE-1488488F2366}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "basic_window", "examples\basic_window\basic_window.csproj", "{9BA583A6-1986-402E-BC29-5E054F6224E8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "basic_window", "examples\basic_window\basic_window.csproj", "{9BA583A6-1986-402E-BC29-5E054F6224E8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "basic_window_net48", "examples\basic_window_net48\basic_window_net48.csproj", "{B04F7684-A967-4977-901A-17A336AF02EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "basic_window_net48", "examples\basic_window_net48\basic_window_net48.csproj", "{B04F7684-A967-4977-901A-17A336AF02EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "events", "examples\events\events.csproj", "{BE2C15B8-EEB9-46E3-BA90-06432CD1C9D5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "events", "examples\events\events.csproj", "{BE2C15B8-EEB9-46E3-BA90-06432CD1C9D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dynamic_content", "examples\dynamic_content\dynamic_content.csproj", "{A1B64637-4976-41AA-8F56-1D7E58DED082}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dynamic_content", "examples\dynamic_content\dynamic_content.csproj", "{A1B64637-4976-41AA-8F56-1D7E58DED082}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "js_interop", "examples\js_interop\js_interop.csproj", "{6543E52E-FB68-4754-848A-24E9927CC258}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "js_interop", "examples\js_interop\js_interop.csproj", "{6543E52E-FB68-4754-848A-24E9927CC258}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "js_call", "examples\js_call\js_call.csproj", "{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "js_call", "examples\js_call\js_call.csproj", "{085C4587-AB5B-4ECC-9CD8-E8C3D9ED0F2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "invoke_backend_function", "examples\invoke_backend_function\invoke_backend_function.csproj", "{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "invoke_backend_function", "examples\invoke_backend_function\invoke_backend_function.csproj", "{BF7D75E8-B257-45AD-9DB6-439DA9AB927C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "text_editor", "examples\text_editor\text_editor.csproj", "{047D6121-AF91-4428-8B92-C31A976E5642}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "text_editor", "examples\text_editor\text_editor.csproj", "{047D6121-AF91-4428-8B92-C31A976E5642}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "native_api", "examples\native_api\native_api.csproj", "{7662158E-8A4E-4904-9656-69B1E2064D06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "native_api", "examples\native_api\native_api.csproj", "{7662158E-8A4E-4904-9656-69B1E2064D06}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{350DEBCA-D462-4937-A562-D3939B9CEC35}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{473FADD0-6CEF-4832-9ABC-8370A8539292}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -87,6 +90,13 @@ Global
 		{7662158E-8A4E-4904-9656-69B1E2064D06}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7662158E-8A4E-4904-9656-69B1E2064D06}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7662158E-8A4E-4904-9656-69B1E2064D06}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6391CD02-5B36-48C0-968F-F9C95ACD5A54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6391CD02-5B36-48C0-968F-F9C95ACD5A54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6391CD02-5B36-48C0-968F-F9C95ACD5A54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6391CD02-5B36-48C0-968F-F9C95ACD5A54}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{473FADD0-6CEF-4832-9ABC-8370A8539292} = {A18A8D0B-6550-4C02-80D8-4D8DCC8A4C26}
@@ -101,5 +111,6 @@ Global
 		{BF7D75E8-B257-45AD-9DB6-439DA9AB927C} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 		{047D6121-AF91-4428-8B92-C31A976E5642} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 		{7662158E-8A4E-4904-9656-69B1E2064D06} = {646E5093-39B6-4C21-8EEE-1488488F2366}
+		{6391CD02-5B36-48C0-968F-F9C95ACD5A54} = {646E5093-39B6-4C21-8EEE-1488488F2366}
 	EndGlobalSection
 EndGlobal
