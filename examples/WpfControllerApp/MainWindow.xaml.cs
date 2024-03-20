@@ -6,6 +6,7 @@ using System.Windows.Threading;
 using WebUI;
 using Windows.Win32;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
+using kvp=System.Collections.Generic.KeyValuePair<string,string>;
 
 namespace WpfControllerApp
 {
@@ -38,22 +39,57 @@ namespace WpfControllerApp
 
             public void InvokeWithVoid(Action action) => dispatcher.Invoke(action);
         }
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             WebUI.Window.UseSpecificDispatcher = new WinDispatcher(Dispatcher);
 
             window = new(new WebUI.WindowProperties { Width = 640, Height = 480, X = 800, Y = 50 });
             var evts = window.RegisterDefaultEventHandler();
-            evts.OnDisconnect += (_) =>
+
+            //evts.OnDisconnect += (_) =>
+            //{
+            //    window = null;
+            //    Dispatcher.InvokeAsync(() => Close());
+            //};
+            
+            window.InitOurBridge();
+            //window.Show("<html><head><script src='webui.js'></script></head><body>Hi Bob</body></html>");
+            //await Task.Delay(2000);
+            //btnDevTools_Click(null, null);
+            // await Task.Delay(2000);
+
+            evts.OnConnect += (window) =>
             {
-                window = null;
-                Dispatcher.InvokeAsync(() => Close());
+                //this.window = window;
+                NewConnect();
             };
+            
+            
+
             window.Show("index.html");
 
-            window.RegisterOnClick(JSClickedButton, "TestButton");
-            window.RegisterBoundFunction(() => MyTest_function);
+            //window.RegisterBoundFunction(() => MyTest_function);
         }
+        private async void NewConnect()
+        {
+            window.SetDebug();
+            window.AddEventListener(JSClickedButton, CommonEventTypes.click, "TestButton");
+            window.RegisterBoundFunction("MyTest_function", RawMyTestCalled);
+            window.AddEventListener(JSDblClickAny,CommonEventTypes.dblclick,"window",null,new kvp[]{new("button","button"), new("X Pos","clientX"), new("Y Pos","clientY")  });
+
+        }
+
+        private void JSDblClickAny(DomEvent evt)
+        {
+            LogItem($"DoubleClick event: " + Newtonsoft.Json.JsonConvert.SerializeObject(evt, Newtonsoft.Json.Formatting.Indented).Replace("\n","\t\n"));
+        }
+
+        private Task<string> RawMyTestCalled(string serialized)
+        {
+            var args = Newtonsoft.Json.JsonConvert.DeserializeObject<string[]>(serialized);
+            return MyTest_function(args[0], args[1], double.Parse(args[2]));
+        }
+
         private async Task<string> MyTest_function(String arg1, String arg2, double arg3)
         {
             var str = $"I am called: {arg1}({arg1.GetType()}) and {arg2}({arg2.GetType()}) {arg3}({arg3.GetType()})";
@@ -61,9 +97,9 @@ namespace WpfControllerApp
             await Task.Delay(500);
             return "Nice Call " + arg1;
         }
-        private void JSClickedButton(String elem)
+        private void JSClickedButton(DomEvent evt)
         {
-            LogItem($"Got a click from JS for: {elem}");
+            LogItem($"Got a click from JS for: {evt.originalTargetId}");
         }
 
         private void LogItem(object val, [CallerArgumentExpression(nameof(val))] string expression = "unknown")
@@ -74,7 +110,7 @@ namespace WpfControllerApp
                 double or decimal or float or char or bool or int or string => val.ToString(),
                 _ => "Serialized as: " + Newtonsoft.Json.JsonConvert.SerializeObject(val, Newtonsoft.Json.Formatting.None)
             };
-            txtLog.Text += $"{expression} => {valStr} ({val.GetType()})\n";
+            txtLog.Text += $"{expression} => {valStr.Replace("\r","")} ({val.GetType()})\n";
         }
         private async void btnTest1_Click(object sender, RoutedEventArgs e)
         {

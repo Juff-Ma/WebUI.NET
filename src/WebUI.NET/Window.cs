@@ -455,9 +455,9 @@ namespace WebUI
         {
             public JavaScriptException() { }
 
-            public JavaScriptException(string? message) : base(message) { }
+            public JavaScriptException(string originalCall, string? message) : base(message + " when running: " + originalCall) { }
 
-            public JavaScriptException(string? message, Exception? innerException) : base(message, innerException) { }
+            public JavaScriptException(string originalCall, string? message, Exception? innerException) : base(message + " when running: " + originalCall, innerException) { }
 
         }
         public WindowConfig config = new();
@@ -472,12 +472,15 @@ namespace WebUI
         {
             var time = timeout ?? config.ScriptEvaluationDefaultTimeout;
             var result = await BackgroundExecuteScript(javascript, time);
+            if (result == "undefined")
+                return default;
             if (stringReturnsAreSerialized != true && typeof(T) == typeof(string))
             {
                 if (stringReturnsAreSerialized != false && result is string s && s.Length > 2 && s.StartsWith("\"") && s.EndsWith("\"")) //try to autodetect when j
                     return (T)(object)s.Substring(1, s.Length - 2);
                 return (T)(object)result;
             }
+
             return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(result);
         }
 
@@ -490,99 +493,121 @@ namespace WebUI
         /// <returns></returns>
         public async Task<T?> ScriptEvaluateMethod<T>(string javascriptMethod, params object[] args)
         {
-            return await ScriptEvaluate<T>($"return JSON.stringify({CEFSharpImports.GetScriptForJavascriptMethodWithArgs(javascriptMethod, args)});", stringReturnsAreSerialized: true);
+            return await ScriptEvaluate<T>($"return JSON.stringify({CEFSharpImports.GetScriptForJavascriptMethodWithArgs(javascriptMethod, args)});", stringReturnsAreSerialized: true);//not allowed to return null or undefined to webui
 
         }
-        
-        public void RegisterBoundFunction(LambdaExpression methodExpression, String OverrideRegisteredName = null, object OverrideInstance = null)
-        {
-            var info = ReflectionHelpers.GetMethodInfo(methodExpression, out var instance);
-            OverrideInstance ??= instance;
-            OverrideRegisteredName ??= info.Name;
 
-            if (!info.IsStatic && OverrideInstance == null)
-                throw new ArgumentException("Method is an instance method but are not able to automatically determine instance please use OverrideInstance arg");
-            var id = Natives.WebUIBind(_handle, OverrideRegisteredName, OurFuncCallback);
-            boundMethods[id] = new MethodBoundInfo { toCall = info, JSName = OverrideRegisteredName, instance = OverrideInstance, ReturnType = info.ReturnType };
-        }
-        /// <summary>
-        /// Takes a function that gets the name of the element clicked
-        /// </summary>
-        /// <param name="OnClick"></param>
-        public void RegisterOnClick(Action<string> OnClick, String domId)
-        {
-            var id = Natives.WebUIBind(_handle, domId, OurFuncCallback);
-            boundMethods[id] = new ClickBoundInfo { OnClick = OnClick };
-        }
+        public void InvokeJavascriptMethod(string javascriptMethod, params object[] args) => InvokeJavaScript(CEFSharpImports.GetScriptForJavascriptMethodWithArgs(javascriptMethod, args));
 
-        private static void OurFuncCallback(nint windowHandle, nuint eventType, string element, nuint eventId, nuint bindId)
-        {
-            Debug.WriteLine("OurFuncCallback called");
-            if (boundMethods.TryGetValue(bindId, out var _boundItem))
-            {
-                if (_boundItem is ClickBoundInfo cb){
-                    UseSpecificDispatcher.InvokeWithVoid(() => cb.OnClick(element));
-                    return;
-                }
-                var info = _boundItem as MethodBoundInfo;
-                if (info.defaultCallArgs == null)
-                    (info.defaultCallArgs,info.callArgTypes) = ReflectionHelpers.GetArgsForMethod(info.toCall);
 
-                var args = (object[])info.defaultCallArgs.Clone();
-                for (var x = 0; x < info.defaultCallArgs.Length; x++)
-                {
-                    var ptr = Event.Natives.WebUIGet(windowHandle, eventId, (nuint)x); //we can get everything as strings and do the conversions ourselves, if an arg doesn't exist it just returns an empty string
-                    var str = Marshal.PtrToStringAnsi(ptr);
-                    var typ = info.callArgTypes[x];
-                    if (typ == typeof(string))
-                        args[x] = str;
-                    else if (!String.IsNullOrWhiteSpace(str))
-                    {
-                        if (typ == typeof(int) && int.TryParse(str, out var pi))
-                            args[x] = pi;
-                        else if (typ == typeof(double) && double.TryParse(str, out var pd))
-                            args[x] = pd;
-                        else if (typ == typeof(float) && float.TryParse(str, out var pf))
-                            args[x] = pf;
-                        else if (typ == typeof(decimal) && decimal.TryParse(str, out var pde))
-                            args[x] = pde;
-                        else if (typ == typeof(char))
-                            args[x] = str.FirstOrDefault();
 
-                    }
+        //public void RegisterBoundFunction(LambdaExpression methodExpression, String OverrideRegisteredName = null, object OverrideInstance = null)
+        //{
+        //    var info = ReflectionHelpers.GetMethodInfo(methodExpression, out var instance);
+        //    OverrideInstance ??= instance;
+        //    OverrideRegisteredName ??= info.Name;
 
-                }
-                if (info.ReturnType != typeof(void))
-                {
-                    var callMethod = UseSpecificDispatcher.GetType().GetMethod("InvokeWithReturnType").MakeGenericMethod(typeof(object));//info.ReturnType);
-                    var result = callMethod.Invoke(UseSpecificDispatcher, new object[] { () => info.toCall.Invoke(info.instance, args) });
-                    if (result is Task T){
-                        T.Wait(); //ewww even though it returns a promise it doesnt have a deferral
-                        result = result.GetType().GetProperty("Result").GetValue(result);
-                    }
-                     Event.Natives.WebUIReturn(windowHandle, eventId, result.ToString());
-                } else
-                    UseSpecificDispatcher.InvokeWithVoid(() => info.toCall.Invoke(info.instance, args));
-            }
-        }
+        //    if (!info.IsStatic && OverrideInstance == null)
+        //        throw new ArgumentException("Method is an instance method but are not able to automatically determine instance please use OverrideInstance arg");
+        //    var id = Natives.WebUIBind(_handle, OverrideRegisteredName, OurFuncCallback);
+        //    boundMethods[id] = new MethodBoundInfo { toCall = info, JSName = OverrideRegisteredName, instance = OverrideInstance, ReturnType = info.ReturnType };
+        //}
+        ///// <summary>
+        ///// Takes a function that gets the name of the element clicked
+        ///// </summary>
+        ///// <param name="OnClick"></param>
+        //public void RegisterOnClick(Action<string> OnClick, String domId)
+        //{
+        //    var id = Natives.WebUIBind(_handle, domId, OurFuncCallback);
+        //    boundMethods[id] = new ClickBoundInfo { OnClick = OnClick };
+        //}
+
+        //public void RegisterRawFunc(RawBoundCallback callback, String domId){
+        //    var id = Natives.WebUIBind(_handle, domId, OurFuncCallback);
+        //    boundMethods[id] = new RawBoundInfo { cb=callback };
+        //}
+        //private static void OurFuncCallback(nint windowHandle, nuint eventType, string element, nuint eventId, nuint bindId)
+        //{
+        //    Debug.WriteLine("OurFuncCallback called");
+        //    if (boundMethods.TryGetValue(bindId, out var _boundItem))
+        //    {
+        //        if (_boundItem is ClickBoundInfo cb)
+        //        {
+        //            UseSpecificDispatcher.InvokeWithVoid(() => cb.OnClick(element));
+        //            return;
+        //        }
+        //        if (_boundItem is RawBoundInfo rb)
+        //        {
+        //            UseSpecificDispatcher.InvokeWithVoid(() => rb.cb(element, eventId));
+        //            return;
+        //        }
+        //        var info = _boundItem as MethodBoundInfo;
+        //        if (info.defaultCallArgs == null)
+        //            (info.defaultCallArgs, info.callArgTypes) = ReflectionHelpers.GetArgsForMethod(info.toCall);
+
+        //        var args = (object[])info.defaultCallArgs.Clone();
+        //        for (var x = 0; x < info.defaultCallArgs.Length; x++)
+        //        {
+        //            var ptr = Event.Natives.WebUIGet(windowHandle, eventId, (nuint)x); //we can get everything as strings and do the conversions ourselves, if an arg doesn't exist it just returns an empty string
+        //            var str = Marshal.PtrToStringAnsi(ptr);
+        //            var typ = info.callArgTypes[x];
+        //            if (typ == typeof(string))
+        //                args[x] = str;
+        //            else if (!String.IsNullOrWhiteSpace(str))
+        //            {
+        //                if (typ == typeof(int) && int.TryParse(str, out var pi))
+        //                    args[x] = pi;
+        //                else if (typ == typeof(double) && double.TryParse(str, out var pd))
+        //                    args[x] = pd;
+        //                else if (typ == typeof(float) && float.TryParse(str, out var pf))
+        //                    args[x] = pf;
+        //                else if (typ == typeof(decimal) && decimal.TryParse(str, out var pde))
+        //                    args[x] = pde;
+        //                else if (typ == typeof(char))
+        //                    args[x] = str.FirstOrDefault();
+
+        //            }
+
+        //        }
+        //        if (info.ReturnType != typeof(void))
+        //        {
+        //            var callMethod = UseSpecificDispatcher.GetType().GetMethod("InvokeWithReturnType").MakeGenericMethod(typeof(object));//info.ReturnType);
+        //            var result = callMethod.Invoke(UseSpecificDispatcher, new object[] { () => info.toCall.Invoke(info.instance, args) });
+        //            if (result is Task T)
+        //            {
+        //                T.Wait(); //ewww even though it returns a promise it doesnt have a deferral
+        //                result = result.GetType().GetProperty("Result").GetValue(result);
+        //            }
+        //            Event.Natives.WebUIReturn(windowHandle, eventId, result.ToString());
+        //        } else
+        //            UseSpecificDispatcher.InvokeWithVoid(() => info.toCall.Invoke(info.instance, args));
+        //    }
+        //}
         public interface IInvokerHelper
         {
             T InvokeWithReturnType<T>(Func<T> action);
             void InvokeWithVoid(Action action);
         }
-        private class MethodBoundInfo : IBoundInfo
-        {
-            public MethodInfo toCall;
-            public object instance;
-            public object[] defaultCallArgs;
-            public Type[] callArgTypes;
-            public string JSName;
-            public Type ReturnType;
-        }
-        private class ClickBoundInfo : IBoundInfo {
-            public Action<string> OnClick;
-        }
-        private interface IBoundInfo{ }
+        //private class MethodBoundInfo : IBoundInfo
+        //{
+        //    public MethodInfo toCall;
+        //    public object instance;
+        //    public object[] defaultCallArgs;
+        //    public Type[] callArgTypes;
+        //    public string JSName;
+        //    public Type ReturnType;
+        //}
+        //private class ClickBoundInfo : IBoundInfo
+        //{
+        //    public Action<string> OnClick;
+        //}
+        // (nint windowHandle, nuint eventType, string element, nuint eventId, nuint bindId)
+        //public delegate void RawBoundCallback(string element, nuint eventId);
+        //private class RawBoundInfo : IBoundInfo
+        //{
+        //    public RawBoundCallback cb;
+        //}
+        private interface IBoundInfo { }
         private static ConcurrentDictionary<nuint, IBoundInfo> boundMethods = new();
 
         private unsafe Task<string> BackgroundExecuteScript(string javascript, TimeSpan timeout)
@@ -595,7 +620,7 @@ namespace WebUI
                 {
                     var str = Encoding.UTF8.GetString(ptr, buffer.Span.IndexOf((byte)0));
                     if (!res)
-                        throw new JavaScriptException(str);
+                        throw new JavaScriptException(javascript, str);
                     return str;
                 }
             }
@@ -970,10 +995,12 @@ namespace WebUI
                     {
                         WebUISendRaw(windowHandle, function, notNullPointer.AddrOfPinnedObject(), length);
                     }
-                } catch
+                }
+                catch
                 {
                     // If an exception throws it will most likely be from Marshal.Copy and there will be nothing to handle
-                } finally
+                }
+                finally
                 {
                     pinnedDataPointer?.Free();
                 }
@@ -1061,10 +1088,12 @@ namespace WebUI
                     Marshal.Copy(buffer, dataPointer, 0, (int)length);
 
                     return result;
-                } catch
+                }
+                catch
                 {
                     return false;
-                } finally
+                }
+                finally
                 {
                     Utils.Free(buffer);
                 }

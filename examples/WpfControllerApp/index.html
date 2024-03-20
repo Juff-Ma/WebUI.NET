@@ -4,6 +4,7 @@
 <head>
 	<meta charset="utf-8" />
 	<script src="webui.js"></script>
+	<script src="webui_net.js"></script>
 	<title>JS Interop</title>
 	<script>
 
@@ -25,7 +26,7 @@
 		const getComplexObj = () => complexObj;
 
 		async function btn2Clicked() {
-			let res = await webui.call("MyTest_function", "an", "arg", 12345.78);
+				let res = await MyTest_function("1st JS Arg Passed to C#", "arg", 12345.78);
 			alert("You returned: " + res);
 		}
 
