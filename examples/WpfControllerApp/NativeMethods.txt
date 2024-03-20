@@ -1,0 +1,7 @@
+PostMessage
+VIRTUAL_KEY
+WM_KEYDOWN
+WM_KEYUP
+SendInput
+INPUT
+SetForegroundWindow

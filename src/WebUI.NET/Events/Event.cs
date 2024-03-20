@@ -162,7 +162,7 @@ namespace WebUI.Events
         }
 
 #if NET7_0_OR_GREATER
-        private static partial class Natives
+        internal static partial class Natives
         {
             [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_interface_get_int_at")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -187,7 +187,7 @@ namespace WebUI.Events
             public static partial void WebUIReturn(IntPtr windowHandle, UIntPtr eventId, string content);
         }
 #else
-        private static class Natives
+        internal static class Natives
         {
             [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
