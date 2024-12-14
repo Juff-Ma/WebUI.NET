@@ -937,7 +937,7 @@ namespace WebUI
                 EntryPoint = "webui_show_browser")]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool WebUIShow(WindowHandle windowHandle, string content,
-                [MarshalAs(UnmanagedType.SysUInt)] Browser browser);
+                [MarshalAs(UnmanagedType.U4)] Browser browser);
 
             [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
@@ -1073,7 +1073,7 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_set_runtime")]
             public static extern void WebUISetRuntime(WindowHandle windowHandle,
-                [MarshalAs(UnmanagedType.SysUInt)] Runtime runtime);
+                [MarshalAs(UnmanagedType.U4)] Runtime runtime);
         }
 #endif
     }
