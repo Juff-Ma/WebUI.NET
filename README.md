@@ -65,7 +65,7 @@ dotnet add package WebUI.NET.Natives.Secure
 The debug builds of WebUI.NET are provided using github packages and contain debug builds of the library and the underlying natives. WebUI will ONLY provide debug logging on such builds. If you did install the nuget.org variant first you might need to clear your nuget cache and bin/obj directories in order for nuget to download and use those builds.
 
 ## Usage
-A basic example (.NET 7.0+) of how to open a Window and display a basic message (taken from *basic_window* example)
+A basic example (.NET 8.0+) of how to open a Window and display a basic message (taken from *basic_window* example)
 ```csharp
 ﻿using WebUI;
 
