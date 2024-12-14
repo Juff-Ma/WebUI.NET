@@ -359,7 +359,7 @@ namespace WebUI
         public bool Show(string content, Browser browser)
         {
             ThrowIfDisposedOrInvalid();
-            return Natives.WebUIShow(_handle, content, browser);
+            return Natives.WebUIShow(_handle, content, (UIntPtr)browser);
         }
 
         /// <summary>
@@ -673,7 +673,7 @@ namespace WebUI
         public void SetJavaScriptRuntime(Runtime runtime)
         {
             ThrowIfDisposedOrInvalid();
-            Natives.WebUISetRuntime(_handle, runtime);
+            Natives.WebUISetRuntime(_handle, (UIntPtr)runtime);
         }
 
         /// <summary>
@@ -732,9 +732,6 @@ namespace WebUI
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             [return: MarshalAs(UnmanagedType.I1)]
             public static partial bool WebUIShow(WindowHandle windowHandle, string content, UIntPtr browser);
-
-            public static bool WebUIShow(WindowHandle windowHandle, string content, Browser browser) =>
-                WebUIShow(windowHandle, content, (UIntPtr)browser);
 
             [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_kiosk")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
@@ -893,9 +890,6 @@ namespace WebUI
             [LibraryImport(Utils.LibraryName, StringMarshalling = StringMarshalling.Utf8, EntryPoint = "webui_set_runtime")]
             [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
             public static partial void WebUISetRuntime(WindowHandle windowHandle, UIntPtr runtime);
-
-            public static void WebUISetRuntime(WindowHandle windowHandle, Runtime runtime) =>
-                WebUISetRuntime(windowHandle, (UIntPtr)runtime);
         }
 #else
         private static class Natives
@@ -937,7 +931,7 @@ namespace WebUI
                 EntryPoint = "webui_show_browser")]
             [return: MarshalAs(UnmanagedType.I1)]
             public static extern bool WebUIShow(WindowHandle windowHandle, string content,
-                [MarshalAs(UnmanagedType.SysUInt)] Browser browser);
+                [MarshalAs(UnmanagedType.SysUInt)] UIntPtr browser);
 
             [DllImport(Utils.LibraryName, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
@@ -1073,7 +1067,7 @@ namespace WebUI
                 ThrowOnUnmappableChar = false, BestFitMapping = false,
                 EntryPoint = "webui_set_runtime")]
             public static extern void WebUISetRuntime(WindowHandle windowHandle,
-                [MarshalAs(UnmanagedType.SysUInt)] Runtime runtime);
+                [MarshalAs(UnmanagedType.SysUInt)] UIntPtr runtime);
         }
 #endif
     }
