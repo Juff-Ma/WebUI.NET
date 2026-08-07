@@ -6,7 +6,7 @@
 
 [last-commit]: https://img.shields.io/github/last-commit/Juff-Ma/WebUI.NET?style=for-the-badge&logo=github
 [release-version]: https://img.shields.io/github/v/release/Juff-Ma/WebUI.NET?sort=date&display_name=tag&style=for-the-badge
-[license]: https://img.shields.io/github/license/Juff-Ma/WebUI.NET?style=for-the-badge&label=license
+[license]: https://img.shields.io/github/license/Juff-Ma/WebUI.NET?style=for-the-badge&label=license&color=%23B0F4B0
 
 [![][last-commit]](https://github.com/Juff-Ma/WebUI.NET/pulse)
 [![][release-version]](https://github.com/Juff-Ma/WebUI.NET/releases/latest)
@@ -40,6 +40,11 @@ If you want to see whats possible here are screenshots of the text_editor exampl
 
 ### More Info
 If you are not yet convinced or need more informations about WebUI take a look at it's [homepage](https://webui.me) or it's [repository](https://github.com/webui-dev/webui/)
+
+## Maintainer Comment
+**WebUI.NET is not unmaintained!**
+
+WebUI has seen a lot of development over the past few years but has not has a stable release. I develop WebUI.NET only for the stable WebUI releases. Once stable 2.5.0 releases work will resume. For the time being, 2.4.2 is still useful and I'm still maintaining it, there's just nothing to do really.
 
 ## Contents
 - [Features](#webuinet)
